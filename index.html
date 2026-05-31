@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -28,9 +28,9 @@
   --font-main: 'Syne', sans-serif;
 }
 html[lang="ar"] { --font-main: 'Cairo', sans-serif; }
-
+ 
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-
+ 
 body {
   background: var(--bg);
   color: var(--text);
@@ -42,11 +42,11 @@ body {
     radial-gradient(ellipse 50% 30% at -10% 80%, #38bfff12 0%, transparent 55%);
   transition: font-family .2s;
 }
-
+ 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
+ 
 /* ── HEADER ── */
 header {
   position: sticky; top: 0; z-index: 200;
@@ -86,7 +86,7 @@ header {
   0%,100% { opacity:1; box-shadow:0 0 0 0 #39ffa040; }
   50%      { opacity:.7; box-shadow:0 0 0 4px transparent; }
 }
-
+ 
 /* ── PAUSE BTN ── */
 .btn-pause {
   display:flex; align-items:center; gap:5px;
@@ -99,43 +99,13 @@ header {
 }
 .btn-pause:hover { background:#a259ff28; box-shadow:var(--glow-p); }
 .btn-pause.paused { border-color:var(--blue); color:var(--blue); background:#38bfff15; }
-
-/* ── LANG TOGGLE ── */
-.lang-bar {
-  display:flex; align-items:center; justify-content:flex-end;
-  gap:10px; padding:10px 16px 4px;
-}
-.lang-label { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:.1em; }
-.lang-toggle {
-  position:relative; width:52px; height:26px; cursor:pointer;
-}
-.lang-toggle input { opacity:0; width:0; height:0; }
-.lang-track {
-  position:absolute; inset:0; border-radius:99px;
-  background:var(--surface); border:1.5px solid var(--border);
-  transition:all .3s;
-}
-.lang-toggle input:checked ~ .lang-track {
-  background:#a259ff22; border-color:var(--purple);
-  box-shadow:0 0 12px #a259ff44;
-}
-.lang-thumb {
-  position:absolute; top:3px; left:3px;
-  width:18px; height:18px; border-radius:50%;
-  background:var(--muted); transition:all .3s;
-  display:flex; align-items:center; justify-content:center;
-  font-size:8px; font-weight:700; color:#fff; letter-spacing:0;
-}
-.lang-toggle input:checked ~ .lang-track ~ .lang-thumb,
-.lang-toggle input:checked + .lang-track + .lang-thumb {
-  left:28px; background:var(--purple);
-}
-/* fix stacking — thumb sits after track in DOM */
-.lang-thumb { pointer-events:none; }
-
+ 
+/* ── LANG TOGGLE (disabled — interface is permanently in Arabic) ── */
+.lang-bar { display:none; }
+ 
 /* ── MAIN MENU ── */
 .main-menu { padding:8px 16px; display:flex; flex-direction:column; gap:12px; }
-
+ 
 .menu-btn {
   display:flex; align-items:center; gap:14px;
   padding:18px 18px; border-radius:var(--r);
@@ -150,19 +120,19 @@ header {
 }
 .menu-btn:hover { transform:translateY(-2px); }
 .menu-btn:active { transform:translateY(0); }
-
+ 
 .menu-btn.purple::before { background:linear-gradient(135deg,#a259ff12,transparent); }
 .menu-btn.blue::before   { background:linear-gradient(135deg,#38bfff12,transparent); }
 .menu-btn.green::before  { background:linear-gradient(135deg,#39ffa012,transparent); }
 .menu-btn:hover::before  { opacity:1; }
-
+ 
 .menu-btn.purple { border-color:#a259ff30; box-shadow:0 4px 24px #a259ff0a; }
 .menu-btn.blue   { border-color:#38bfff30; box-shadow:0 4px 24px #38bfff0a; }
 .menu-btn.green  { border-color:#39ffa030; box-shadow:0 4px 24px #39ffa00a; }
 .menu-btn.purple:hover { border-color:#a259ff66; box-shadow:0 8px 32px #a259ff22; }
 .menu-btn.blue:hover   { border-color:#38bfff66; box-shadow:0 8px 32px #38bfff22; }
 .menu-btn.green:hover  { border-color:#39ffa066; box-shadow:0 8px 32px #39ffa022; }
-
+ 
 .menu-icon {
   width:46px; height:46px; border-radius:12px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:22px;
@@ -170,11 +140,11 @@ header {
 .menu-btn.purple .menu-icon { background:#a259ff18; border:1px solid #a259ff30; }
 .menu-btn.blue   .menu-icon { background:#38bfff18; border:1px solid #38bfff30; }
 .menu-btn.green  .menu-icon { background:#39ffa018; border:1px solid #39ffa030; }
-
+ 
 .menu-text { flex:1; min-width:0; }
 .menu-title { font-size:14px; font-weight:700; margin-bottom:3px; }
 .menu-sub   { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
-
+ 
 .menu-arrow {
   font-size:18px; color:var(--muted); transition:transform .2s, color .2s;
 }
@@ -183,7 +153,7 @@ header {
 .menu-btn.purple:hover .menu-arrow { color:var(--purple); }
 .menu-btn.blue:hover   .menu-arrow { color:var(--blue); }
 .menu-btn.green:hover  .menu-arrow { color:var(--green); }
-
+ 
 /* ── FOOTER CTA ── */
 .footer-cta {
   margin:8px 16px 0;
@@ -205,7 +175,7 @@ header {
   transition:all .2s; white-space:nowrap;
 }
 .btn-launch:hover { transform:translateY(-1px); box-shadow:0 4px 24px #a259ffaa; }
-
+ 
 /* ════════════════════════════════
    OVERLAY / MODAL SYSTEM
 ════════════════════════════════ */
@@ -215,7 +185,7 @@ header {
   pointer-events:none; visibility:hidden;
 }
 .overlay.open { pointer-events:all; visibility:visible; }
-
+ 
 .overlay-backdrop {
   position:absolute; inset:0;
   background:#000000cc;
@@ -223,7 +193,7 @@ header {
   backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
 }
 .overlay.open .overlay-backdrop { opacity:1; }
-
+ 
 .overlay-sheet {
   position:absolute; bottom:0; left:0; right:0;
   background:var(--surface);
@@ -238,13 +208,13 @@ header {
 .overlay.open .overlay-sheet {
   transform:translateY(0);
 }
-
+ 
 /* drag handle */
 .sheet-handle {
   width:36px; height:4px; border-radius:99px;
   background:var(--border); margin:12px auto 0; flex-shrink:0;
 }
-
+ 
 /* sheet header */
 .sheet-head {
   display:flex; align-items:center; gap:12px;
@@ -265,12 +235,12 @@ header {
   transition:all .2s;
 }
 .btn-close:hover { border-color:var(--danger); color:var(--danger); background:#ff4d6d10; }
-
+ 
 /* sheet body scroll */
 .sheet-body {
   overflow-y:auto; flex:1; padding:16px 18px 32px;
 }
-
+ 
 /* ── MODAL 1: Groups ── */
 .groups-counter-card {
   background:linear-gradient(135deg,#a259ff18,#38bfff12);
@@ -292,7 +262,7 @@ header {
 }
 .gfi-item { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
 .gfi-item span { color:var(--blue); }
-
+ 
 .modal-group-list { display:flex; flex-direction:column; gap:0; }
 .modal-group-item {
   display:flex; align-items:center; gap:12px;
@@ -318,7 +288,8 @@ header {
 }
 .btn-add-group:hover { background:#a259ff28; border-color:var(--purple); box-shadow:0 0 12px #a259ff44; }
 .btn-add-group.added { background:#39ffa018; border-color:var(--green); color:var(--green); font-size:14px; }
-
+.btn-add-group.added:hover { background:#ff4d6d15; border-color:var(--danger); color:var(--danger); box-shadow:0 0 12px #ff4d6d44; }
+ 
 /* ── MODAL 2: Messages ── */
 .msg-hero {
   text-align:center; padding:16px 0 20px;
@@ -347,6 +318,49 @@ header {
 }
 .btn-add-msg:hover { border-style:solid; background:#a259ff12; box-shadow:0 0 12px #a259ff30; }
 
+/* ── Groups-added badge inside Messages modal ── */
+.msg-groups-badge {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; border-radius:var(--r-sm);
+  background:linear-gradient(135deg,#a259ff12,#38bfff08);
+  border:1px solid #a259ff30;
+  margin-bottom:14px;
+  transition:all .3s;
+}
+.msg-groups-badge.empty {
+  border-color:#ff4d6d30;
+  background:linear-gradient(135deg,#ff4d6d0a,transparent);
+}
+.msg-groups-badge-icon {
+  font-size:16px; flex-shrink:0;
+  width:30px; height:30px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  background:#a259ff18; border:1px solid #a259ff30;
+  transition:all .3s;
+}
+.msg-groups-badge.empty .msg-groups-badge-icon {
+  background:#ff4d6d12; border-color:#ff4d6d30;
+}
+.msg-groups-badge-text { flex:1; min-width:0; }
+.msg-groups-badge-label {
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:1px;
+}
+.msg-groups-badge-count {
+  font-size:13px; font-weight:700;
+  color:var(--purple); transition:color .3s;
+}
+.msg-groups-badge.empty .msg-groups-badge-count { color:var(--danger); }
+.msg-groups-badge-pill {
+  font-size:10px; font-family:'DM Mono',monospace;
+  background:#a259ff22; color:var(--purple);
+  border:1px solid #a259ff33; padding:3px 10px; border-radius:99px;
+  white-space:nowrap; transition:all .3s; flex-shrink:0;
+}
+.msg-groups-badge.empty .msg-groups-badge-pill {
+  background:#ff4d6d12; color:var(--danger); border-color:#ff4d6d30;
+}
+ 
 .messages-list { display:flex; flex-direction:column; gap:8px; }
 .msg-row {
   display:flex; align-items:flex-start; gap:8px;
@@ -375,7 +389,7 @@ header {
   display:flex; align-items:center; justify-content:center; transition:all .2s;
 }
 .btn-del:hover { border-color:var(--danger); color:var(--danger); background:#ff4d6d12; }
-
+ 
 /* ── MODAL 3: Scheduler ── */
 .sched-section-label {
   font-size:10px; letter-spacing:.18em; text-transform:uppercase;
@@ -432,7 +446,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   outline:none; transition:border-color .2s, box-shadow .2s; color-scheme:dark;
 }
 .time-field input[type=time]:focus { border-color:var(--blue); box-shadow:0 0 0 3px #38bfff20; }
-
+ 
 /* ── 24H TOGGLE ── */
 .allday-row {
   display:flex; align-items:center; justify-content:space-between;
@@ -461,7 +475,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .allday-title { font-size:13px; font-weight:700; }
 .allday-sub   { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:2px; }
 .allday-row.active .allday-title { color:var(--blue); }
-
+ 
 /* pill switch */
 .allday-switch {
   position:relative; width:44px; height:24px; flex-shrink:0; pointer-events:none;
@@ -484,11 +498,11 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   left:23px; background:var(--blue);
   box-shadow:0 0 8px #38bfffaa;
 }
-
+ 
 /* disabled time fields */
 .time-inputs.disabled { opacity:.38; pointer-events:none; }
 .time-inputs { transition:opacity .3s; }
-
+ 
 /* "runs all day" badge that replaces the inputs */
 .allday-badge {
   display:none; align-items:center; justify-content:center; gap:8px;
@@ -500,7 +514,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   margin-bottom:16px;
 }
 .allday-badge.visible { display:flex; }
-
+ 
 /* ══ MODAL 4: ANALYTICS ══ */
 /* stat cards */
 .stat-grid {
@@ -518,7 +532,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .stat-card.failed::before   { background:var(--danger); }
 .stat-card.rate             { grid-column:1/-1; flex-direction:row; align-items:center; gap:16px; }
 .stat-card.rate::before     { background:linear-gradient(135deg,var(--purple),var(--blue)); opacity:.07; }
-
+ 
 .stat-icon {
   width:32px; height:32px; border-radius:9px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:15px;
@@ -526,7 +540,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .stat-card.success .stat-icon { background:#39ffa015; border:1px solid #39ffa030; }
 .stat-card.failed  .stat-icon { background:#ff4d6d15; border:1px solid #ff4d6d30; }
 .stat-card.rate    .stat-icon { background:#a259ff15; border:1px solid #a259ff30; }
-
+ 
 .stat-label {
   font-size:10px; letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted); font-family:'DM Mono',monospace;
@@ -536,7 +550,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 }
 .stat-card.success .stat-number { color:var(--green);  text-shadow:var(--glow-g); }
 .stat-card.failed  .stat-number { color:var(--danger);  text-shadow:0 0 14px #ff4d6d66; }
-
+ 
 .stat-card.rate .stat-right { flex:1; }
 .rate-bar-wrap { margin-top:6px; height:6px; border-radius:99px; background:var(--border); overflow:hidden; }
 .rate-bar-fill {
@@ -555,7 +569,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .rate-sublabel {
   font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:3px;
 }
-
+ 
 /* sub-stat row */
 .sub-stat-row {
   display:flex; gap:8px; margin-bottom:18px;
@@ -567,7 +581,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 }
 .sub-stat-val { font-size:15px; font-weight:700; color:var(--blue); }
 .sub-stat-lbl { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; }
-
+ 
 /* terminal log */
 .terminal {
   background:#07070a; border:1px solid #1e1e2a;
@@ -604,7 +618,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .log-warn { color:#ffbb33; }
 .log-err  { color:var(--danger); }
 .log-info { color:var(--blue); }
-
+ 
 /* menu btn — orange accent for analytics */
 .menu-btn.orange {
   border-color:#ff8c4230;
@@ -614,7 +628,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .menu-btn.orange:hover   { border-color:#ff8c4266; box-shadow:0 8px 32px #ff8c4222; }
 .menu-btn.orange .menu-icon { background:#ff8c4218; border:1px solid #ff8c4230; }
 .menu-btn.orange:hover .menu-arrow { color:#ff8c42; }
-
+ 
 /* ══════════════════════════════════
    LICENSE LOCK SCREEN
 ══════════════════════════════════ */
@@ -633,7 +647,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   pointer-events: none;
   transform: scale(1.04);
 }
-
+ 
 .lock-card {
   width: calc(100% - 40px);
   max-width: 380px;
@@ -648,7 +662,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   position: relative;
   overflow: hidden;
 }
-
+ 
 .lock-card::before {
   content: '';
   position: absolute;
@@ -659,19 +673,19 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   background: radial-gradient(circle, #a259ff28 0%, transparent 70%);
   pointer-events: none;
 }
-
+ 
 .lock-card::after {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, #a259ff66, #38bfff44, transparent);
 }
-
+ 
 .lock-logo {
   text-align: center;
   margin-bottom: 28px;
 }
-
+ 
 .lock-logo-icon {
   width: 68px; height: 68px;
   border-radius: 20px;
@@ -683,12 +697,12 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   box-shadow: 0 0 30px #a259ff44, 0 8px 20px #00000050;
   animation: lockIconFloat 3s ease-in-out infinite;
 }
-
+ 
 @keyframes lockIconFloat {
   0%, 100% { transform: translateY(0); box-shadow: 0 0 30px #a259ff44, 0 8px 20px #00000050; }
   50%       { transform: translateY(-5px); box-shadow: 0 0 44px #a259ff66, 0 14px 28px #00000060; }
 }
-
+ 
 .lock-logo h1 {
   font-size: 20px; font-weight: 800;
   background: linear-gradient(135deg, #fff 30%, #a259ffcc);
@@ -696,7 +710,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   background-clip: text;
   letter-spacing: -.01em;
 }
-
+ 
 .lock-logo .lock-subtitle {
   font-size: 11px;
   color: var(--muted);
@@ -705,13 +719,13 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   letter-spacing: .12em;
   text-transform: uppercase;
 }
-
+ 
 .lock-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border), transparent);
   margin: 0 0 24px;
 }
-
+ 
 .lock-field-label {
   font-size: 11px;
   letter-spacing: .14em;
@@ -721,12 +735,12 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   margin-bottom: 8px;
   display: block;
 }
-
+ 
 .lock-input-wrap {
   position: relative;
   margin-bottom: 16px;
 }
-
+ 
 .lock-input-wrap .lock-key-icon {
   position: absolute;
   left: 14px; top: 50%;
@@ -738,7 +752,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 [dir="rtl"] .lock-input-wrap .lock-key-icon {
   left: auto; right: 14px;
 }
-
+ 
 #licenseInput {
   width: 100%;
   padding: 13px 14px 13px 40px;
@@ -758,7 +772,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   border-color: var(--purple);
   box-shadow: 0 0 0 3px #a259ff22, 0 0 18px #a259ff30;
 }
-
+ 
 .btn-activate {
   width: 100%;
   padding: 14px;
@@ -787,7 +801,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   box-shadow: 0 0 40px #a259ff88, 0 8px 24px #a259ff55;
 }
 .btn-activate:active { transform: translateY(0); }
-
+ 
 /* pulsing glow ring on button */
 .btn-activate::after {
   content: '';
@@ -804,7 +818,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
+ 
 .lock-error-msg {
   display: none;
   align-items: center; gap: 6px;
@@ -819,7 +833,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   animation: fadeSlide .25s ease;
 }
 .lock-error-msg.show { display: flex; }
-
+ 
 .lock-contact {
   text-align: center;
   margin-top: 20px;
@@ -842,7 +856,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   color: var(--purple);
   border-color: #a259ff66;
 }
-
+ 
 .lock-particles {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 24px;
 }
@@ -860,7 +874,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   80%  { opacity: .3; }
   100% { opacity: 0; transform: translateY(-120px) scale(0); }
 }
-
+ 
 /* ══════════════════════════════════
    AI SMART REWRITER BUTTON & MODAL
 ══════════════════════════════════ */
@@ -938,7 +952,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   transform: translateY(-1px);
   color: #d4a6ff;
 }
-
+ 
 /* AI Rewriter Overlay Modal */
 #modal-airewrite .overlay-sheet {
   border-top: 1px solid #a259ff44;
@@ -968,7 +982,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   font-family: 'DM Mono', monospace;
   margin-top: 4px; line-height: 1.6;
 }
-
+ 
 .ai-source-label {
   font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 8px;
@@ -991,7 +1005,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   box-shadow: 0 0 0 3px #a259ff20;
 }
 #aiSourceText::placeholder { color: var(--muted); }
-
+ 
 .ai-options-row {
   display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
 }
@@ -1007,7 +1021,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   border-color: var(--purple); background: #a259ff22;
   color: var(--purple); box-shadow: 0 0 12px #a259ff40;
 }
-
+ 
 .btn-run-ai {
   width: 100%; padding: 13px;
   border-radius: 12px; border: none;
@@ -1027,14 +1041,14 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 .btn-run-ai:disabled {
   opacity: .5; cursor: not-allowed; transform: none;
 }
-
+ 
 .ai-results-label {
   font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--purple); font-family: 'DM Mono', monospace;
   margin-bottom: 10px; display: none;
 }
 .ai-results-label.show { display: block; }
-
+ 
 .ai-result-cards { display: flex; flex-direction: column; gap: 10px; }
 .ai-result-card {
   background: var(--card);
@@ -1067,7 +1081,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
   font-size: 12px; color: var(--text); line-height: 1.65;
   font-family: var(--font-main);
 }
-
+ 
 .ai-loading {
   display: none; flex-direction: column; align-items: center;
   gap: 12px; padding: 28px 0; text-align: center;
@@ -1094,13 +1108,13 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
 </style>
 </head>
 <body>
-
+ 
 <!-- ══════════ LICENSE LOCK SCREEN ══════════ -->
 <div id="lockScreen">
   <div class="lock-card">
     <!-- floating particles -->
     <div class="lock-particles" id="lockParticles"></div>
-
+ 
     <div class="lock-logo">
       <div class="lock-logo-icon">🔐</div>
       <h1>
@@ -1110,9 +1124,9 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
         <span data-en="Premium License Required" data-ar="يلزم ترخيص مميز">Premium License Required</span>
       </p>
     </div>
-
+ 
     <div class="lock-divider"></div>
-
+ 
     <label class="lock-field-label" for="licenseInput">
       <span data-en="License Key / كود التفعيل" data-ar="كود التفعيل / License Key">License Key / كود التفعيل</span>
     </label>
@@ -1128,16 +1142,16 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
         onkeydown="if(event.key==='Enter') activateLicense()"
       />
     </div>
-
+ 
     <button class="btn-activate" onclick="activateLicense()">
       ✦ <span data-en="Activate / تفعيل" data-ar="تفعيل / Activate">Activate / تفعيل</span>
     </button>
-
+ 
     <div class="lock-error-msg" id="lockError">
       <span>⚠</span>
       <span data-en="Invalid key. Please try again or contact admin." data-ar="مفتاح غير صحيح. تواصل مع الإدارة.">Invalid key. Please try again or contact admin.</span>
     </div>
-
+ 
     <div class="lock-contact">
       <p>
         <span data-en="Don't have a license key?" data-ar="لا تملك كود التفعيل؟">Don't have a license key?</span><br>
@@ -1148,7 +1162,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     </div>
   </div>
 </div>
-
+ 
 <!-- ══════════ HEADER ══════════ -->
 <header>
   <div class="avatar">A</div>
@@ -1165,20 +1179,10 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     <span data-en="Pause" data-ar="إيقاف">Pause</span>
   </button>
 </header>
-
-<!-- ══════════ LANG TOGGLE ══════════ -->
-<div class="lang-bar">
-  <span class="lang-label" id="langLabel">EN</span>
-  <label class="lang-toggle">
-    <input type="checkbox" id="langSwitch" onchange="toggleLang(this)"/>
-    <div class="lang-track"></div>
-    <div class="lang-thumb" id="langThumb">AR</div>
-  </label>
-</div>
-
+ 
 <!-- ══════════ MAIN MENU ══════════ -->
 <div class="main-menu">
-
+ 
   <button class="menu-btn purple" onclick="openModal('groups')">
     <div class="menu-icon">📡</div>
     <div class="menu-text">
@@ -1191,7 +1195,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     </div>
     <span class="menu-arrow">›</span>
   </button>
-
+ 
   <button class="menu-btn blue" onclick="openModal('messages')">
     <div class="menu-icon">✉️</div>
     <div class="menu-text">
@@ -1204,7 +1208,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     </div>
     <span class="menu-arrow">›</span>
   </button>
-
+ 
   <button class="menu-btn green" onclick="openModal('schedule')">
     <div class="menu-icon">🗓️</div>
     <div class="menu-text">
@@ -1217,7 +1221,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     </div>
     <span class="menu-arrow">›</span>
   </button>
-
+ 
   <button class="menu-btn orange" onclick="openModal('analytics')">
     <div class="menu-icon">📊</div>
     <div class="menu-text">
@@ -1230,9 +1234,9 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     </div>
     <span class="menu-arrow">›</span>
   </button>
-
+ 
 </div>
-
+ 
 <!-- ══════════ FOOTER CTA ══════════ -->
 <div class="footer-cta">
   <p>
@@ -1243,8 +1247,8 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     🚀 <span data-en="Launch" data-ar="إطلاق">Launch</span>
   </button>
 </div>
-
-
+ 
+ 
 <!-- ════════════════════════════════════
      MODAL 1 — MANAGE GROUPS
 ════════════════════════════════════ -->
@@ -1261,7 +1265,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
       <button class="btn-close" onclick="closeModal('groups')">×</button>
     </div>
     <div class="sheet-body">
-
+ 
       <div class="groups-counter-card">
         <div class="big-num">24</div>
         <div class="big-label" data-en="Total Groups Fetched" data-ar="إجمالي المجموعات المحملة">Total Groups Fetched</div>
@@ -1270,9 +1274,9 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           <div class="gfi-item" data-en="Available: <span>24</span>" data-ar="متاحة: <span>24</span>">Available: <span>24</span></div>
         </div>
       </div>
-
+ 
       <div class="modal-group-list">
-
+ 
         <div class="modal-group-item" data-group-id="grp_crypto_signals_vip">
           <div class="mg-icon" style="background:#1a1a2a;">🚀</div>
           <div class="mg-info">
@@ -1281,7 +1285,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
         <div class="modal-group-item" data-group-id="grp_forex_masters_hub">
           <div class="mg-icon" style="background:#1a2a1a;">💰</div>
           <div class="mg-info">
@@ -1290,7 +1294,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
         <div class="modal-group-item" data-group-id="grp_nft_drop_alerts">
           <div class="mg-icon" style="background:#2a1a1a;">🔥</div>
           <div class="mg-info">
@@ -1299,7 +1303,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
         <div class="modal-group-item" data-group-id="grp_ai_tools_prompts">
           <div class="mg-icon" style="background:#1a1a2a;">🤖</div>
           <div class="mg-info">
@@ -1308,7 +1312,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
         <div class="modal-group-item" data-group-id="grp_stock_market_elite">
           <div class="mg-icon" style="background:#2a2a1a;">📈</div>
           <div class="mg-info">
@@ -1317,7 +1321,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
         <div class="modal-group-item" data-group-id="grp_trading_pros_arabic">
           <div class="mg-icon" style="background:#2a1a2a;">🎯</div>
           <div class="mg-info">
@@ -1326,7 +1330,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
         <div class="modal-group-item" data-group-id="grp_defi_whales_club">
           <div class="mg-icon" style="background:#1a2a2a;">💎</div>
           <div class="mg-info">
@@ -1335,13 +1339,13 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           </div>
           <button class="btn-add-group" onclick="addGroup(this)">+</button>
         </div>
-
+ 
       </div>
     </div>
   </div>
 </div>
-
-
+ 
+ 
 <!-- ════════════════════════════════════
      MODAL 2 — MESSAGE POOL
 ════════════════════════════════════ -->
@@ -1358,6 +1362,16 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
       <button class="btn-close" onclick="closeModal('messages')">×</button>
     </div>
     <div class="sheet-body">
+ 
+      <!-- GROUPS ADDED BADGE -->
+      <div class="msg-groups-badge empty" id="msgGroupsBadge">
+        <div class="msg-groups-badge-icon">📡</div>
+        <div class="msg-groups-badge-text">
+          <div class="msg-groups-badge-label">الكروبات المضافة للنشر</div>
+          <div class="msg-groups-badge-count" id="msgGroupsBadgeCount">لم تُضف أي كروب بعد</div>
+        </div>
+        <div class="msg-groups-badge-pill" id="msgGroupsBadgePill">0 / 40</div>
+      </div>
 
       <!-- AI SMART REWRITER BANNER -->
       <div class="ai-rewrite-banner">
@@ -1370,13 +1384,13 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           ✨ <span data-en="Rewrite" data-ar="صياغة">Rewrite</span>
         </button>
       </div>
-
+ 
       <div class="msg-hero">
         <div class="hero-icon">✉️</div>
         <h4 data-en="Message Rotation" data-ar="تدوير الرسائل">Message Rotation</h4>
         <p data-en="The bot cycles through variations automatically" data-ar="يقوم البوت بالتناوب بين الرسائل تلقائياً">The bot cycles through variations automatically</p>
       </div>
-
+ 
       <div class="msg-counter-bar">
         <div class="msg-count-label">
           <span data-en="Variations" data-ar="رسائل">Variations</span>: <span id="msgCount">1</span> / 20
@@ -1386,7 +1400,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           <span data-en="Add Message" data-ar="إضافة رسالة">Add Message</span>
         </button>
       </div>
-
+ 
       <div class="messages-list" id="msgList">
         <div class="msg-row">
           <span class="msg-num">1</span>
@@ -1397,8 +1411,8 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
     </div>
   </div>
 </div>
-
-
+ 
+ 
 <!-- ════════════════════════════════════
      MODAL 3 — TIMING & SCHEDULE
 ════════════════════════════════════ -->
@@ -1415,7 +1429,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
       <button class="btn-close" onclick="closeModal('schedule')">×</button>
     </div>
     <div class="sheet-body">
-
+ 
       <p class="sched-section-label" data-en="Active Days" data-ar="أيام التفعيل">Active Days</p>
       <div class="days-row" id="daysRow">
         <span class="day-pill" onclick="toggleDay(this)" data-en="Sat" data-ar="سبت">Sat</span>
@@ -1426,11 +1440,11 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
         <span class="day-pill active" onclick="toggleDay(this)" data-en="Thu" data-ar="خمي">Thu</span>
         <span class="day-pill" onclick="toggleDay(this)" data-en="Fri" data-ar="جمع">Fri</span>
       </div>
-
+ 
       <div class="divider"></div>
-
+ 
       <p class="sched-section-label" data-en="Active Time Window" data-ar="نطاق الوقت النشط">Active Time Window</p>
-
+ 
       <!-- 24H TOGGLE ROW -->
       <div class="allday-row" id="alldayRow" onclick="toggle24h()">
         <div class="allday-left">
@@ -1449,13 +1463,13 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           <div class="allday-switch-thumb"></div>
         </div>
       </div>
-
+ 
       <!-- "Runs all day" replacement badge -->
       <div class="allday-badge" id="alldayBadge">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span data-en="Bot runs 24 / 7 — time window disabled" data-ar="البوت يعمل ٢٤/٧ — نطاق الوقت معطّل">Bot runs 24 / 7 — time window disabled</span>
       </div>
-
+ 
       <!-- TIME FIELDS -->
       <div class="time-inputs" id="timeInputs" style="margin-top:0;margin-bottom:20px;">
         <div class="time-field">
@@ -1467,9 +1481,9 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           <input type="time" value="22:00" id="endTimeInput"/>
         </div>
       </div>
-
+ 
       <div class="divider"></div>
-
+ 
       <p class="sched-section-label" data-en="Delay Between Messages" data-ar="الفاصل بين الرسائل">Delay Between Messages</p>
       <div class="delay-row">
         <span class="delay-label" data-en="Interval" data-ar="المدة">Interval</span>
@@ -1479,12 +1493,12 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
       <div class="range-markers">
         <span>1m</span><span>30m</span><span>60m</span><span>90m</span><span>2h</span>
       </div>
-
+ 
     </div>
   </div>
 </div>
-
-
+ 
+ 
 <!-- ════════════════════════════════════
      MODAL 4 — LIVE ANALYTICS
 ════════════════════════════════════ -->
@@ -1501,24 +1515,24 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
       <button class="btn-close" onclick="closeModal('analytics')">×</button>
     </div>
     <div class="sheet-body">
-
+ 
       <!-- STAT CARDS -->
       <div class="stat-grid">
-
+ 
         <div class="stat-card success">
           <div class="stat-icon">✅</div>
           <div class="stat-label" data-en="Successful" data-ar="ناجحة">Successful</div>
           <div class="stat-number" id="statSuccess">1,284</div>
           <div class="stat-label" style="margin-top:2px" data-en="messages sent" data-ar="رسالة أُرسلت">messages sent</div>
         </div>
-
+ 
         <div class="stat-card failed">
           <div class="stat-icon">❌</div>
           <div class="stat-label" data-en="Failed" data-ar="فاشلة">Failed</div>
           <div class="stat-number" id="statFailed" style="color:var(--danger);text-shadow:0 0 14px #ff4d6d66;">68</div>
           <div class="stat-label" style="margin-top:2px" data-en="errors / floods" data-ar="أخطاء / انتظار">errors / floods</div>
         </div>
-
+ 
         <div class="stat-card rate">
           <div class="stat-icon">🎯</div>
           <div class="stat-right">
@@ -1534,9 +1548,9 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
             </div>
           </div>
         </div>
-
+ 
       </div>
-
+ 
       <!-- SUB-STATS ROW -->
       <div class="sub-stat-row">
         <div class="sub-stat">
@@ -1552,7 +1566,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           <div class="sub-stat-lbl" data-en="In Queue" data-ar="في الانتظار">In Queue</div>
         </div>
       </div>
-
+ 
       <!-- TERMINAL LOG -->
       <div class="sched-section-label" data-en="Live Activity Log" data-ar="سجل النشاط الحي" style="margin-bottom:10px;">Live Activity Log</div>
       <div class="terminal">
@@ -1582,12 +1596,12 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
           <div class="log-line" id="latestLog"><span class="log-time">[12:06]</span><span class="log-msg">Sent to <span class="log-ok">Forex Masters Hub</span> ✅</span></div>
         </div>
       </div>
-
+ 
     </div>
   </div>
 </div>
-
-
+ 
+ 
 <!-- ════════════════════════════════════
      MODAL 5 — AI SMART REWRITER
 ════════════════════════════════════ -->
@@ -1604,16 +1618,16 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
       <button class="btn-close" onclick="closeModal('airewrite')">×</button>
     </div>
     <div class="sheet-body">
-
+ 
       <div class="ai-modal-hero">
         <div class="ai-modal-hero-icon">🤖</div>
         <h4 data-en="AI Smart Rewrite ✨" data-ar="إعادة الصياغة الذكية ✨">AI Smart Rewrite ✨</h4>
         <p data-en="Paste your message below. The AI will fragment &amp; rewrite it into multiple variations to bypass Telegram spam filters." data-ar="الصق رسالتك أدناه. سيقوم الذكاء الاصطناعي بإعادة صياغتها إلى نسخ متعددة لتجاوز فلاتر تيليغرام.">Paste your message below. The AI will fragment &amp; rewrite it into multiple variations to bypass Telegram spam filters.</p>
       </div>
-
+ 
       <label class="ai-source-label" data-en="YOUR ORIGINAL MESSAGE" data-ar="رسالتك الأصلية">YOUR ORIGINAL MESSAGE</label>
       <textarea id="aiSourceText" rows="4" placeholder="Paste your message here to rewrite…"></textarea>
-
+ 
       <label class="ai-source-label" data-en="NUMBER OF VARIANTS" data-ar="عدد النسخ">NUMBER OF VARIANTS</label>
       <div class="ai-options-row" id="aiVariantCount">
         <span class="ai-opt-pill" onclick="selectVariantCount(this)" data-val="3">3</span>
@@ -1621,7 +1635,7 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
         <span class="ai-opt-pill" onclick="selectVariantCount(this)" data-val="7">7</span>
         <span class="ai-opt-pill" onclick="selectVariantCount(this)" data-val="10">10</span>
       </div>
-
+ 
       <label class="ai-source-label" data-en="REWRITE STYLE" data-ar="أسلوب الصياغة">REWRITE STYLE</label>
       <div class="ai-options-row" id="aiRewriteStyle">
         <span class="ai-opt-pill active" onclick="selectStyle(this)" data-val="engaging" data-en="Engaging" data-ar="جذاب">Engaging</span>
@@ -1629,11 +1643,11 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
         <span class="ai-opt-pill" onclick="selectStyle(this)" data-val="urgent" data-en="Urgent" data-ar="عاجل">Urgent</span>
         <span class="ai-opt-pill" onclick="selectStyle(this)" data-val="formal" data-en="Formal" data-ar="رسمي">Formal</span>
       </div>
-
+ 
       <button class="btn-run-ai" id="btnRunAI" onclick="runAIRewrite()">
         ✨ <span data-en="Generate Variants with AI" data-ar="توليد النسخ بالذكاء الاصطناعي">Generate Variants with AI</span>
       </button>
-
+ 
       <!-- Loading -->
       <div class="ai-loading" id="aiLoading">
         <div class="ai-loading-dots">
@@ -1643,55 +1657,46 @@ input[type=range]:hover::-webkit-slider-thumb { transform:scale(1.15); }
         </div>
         <p data-en="AI is rewriting your message…" data-ar="الذكاء الاصطناعي يعيد صياغة رسالتك…">AI is rewriting your message…</p>
       </div>
-
+ 
       <!-- Results -->
       <div class="ai-results-label" id="aiResultsLabel" data-en="✦ GENERATED VARIANTS" data-ar="✦ النسخ المولّدة">✦ GENERATED VARIANTS</div>
       <div class="ai-result-cards" id="aiResultCards"></div>
-
+ 
     </div>
   </div>
 </div>
-
-
+ 
+ 
 <script>
 /* ══════════════════════════════════
    API CONFIG
 ══════════════════════════════════ */
-const USER_ID = new URLSearchParams(window.location.search).get('uid');
-const API_BASE = 'https://YOUR-SERVER.com'; // to be changed later
-
+// ── API CONFIG ─────────────────────────────────────────────────────────────
+const _params  = new URLSearchParams(window.location.search);
+const TOKEN    = _params.get('token') || localStorage.getItem('tgab_token') || '';
+if (TOKEN) localStorage.setItem('tgab_token', TOKEN);
+const API_BASE = window.location.origin;
+const USER_ID  = TOKEN;
+ 
 /* ══════════════════════════════════
-   LANGUAGE SYSTEM
+   LANGUAGE SYSTEM — permanently Arabic
 ══════════════════════════════════ */
-let isAR = false;
-
-function toggleLang(cb) {
-  isAR = cb.checked;
+const isAR = true;
+ 
+// Apply Arabic translations once DOM is ready
+document.addEventListener('DOMContentLoaded', function applyArabic() {
   const html = document.documentElement;
-  html.lang = isAR ? 'ar' : 'en';
-  html.dir  = isAR ? 'rtl' : 'ltr';
-  document.getElementById('langLabel').textContent = isAR ? 'AR' : 'EN';
-  document.getElementById('langThumb').textContent = isAR ? 'EN' : 'AR';
-
-  document.querySelectorAll('[data-en]').forEach(el => {
-    const val = isAR ? el.dataset.ar : el.dataset.en;
+  html.lang = 'ar';
+  html.dir  = 'rtl';
+  document.querySelectorAll('[data-ar]').forEach(el => {
+    const val = el.dataset.ar;
     if (val) el.innerHTML = val;
   });
-
-  // placeholder update
   document.querySelectorAll('.msg-input').forEach(ta => {
-    ta.placeholder = isAR ? 'اكتب رسالتك هنا…' : 'Type your message variation…';
+    ta.placeholder = 'اكتب رسالتك هنا…';
   });
-
-  // update pause btn text
-  const pauseSpan = document.querySelector('#pauseBtn span');
-  if (pauseSpan) {
-    const running = !document.getElementById('pauseBtn').classList.contains('paused');
-    if (isAR) pauseSpan.textContent = running ? 'إيقاف' : 'استئناف';
-    else pauseSpan.textContent = running ? 'Pause' : 'Resume';
-  }
-}
-
+});
+ 
 /* ══════════════════════════════════
    PAUSE / RESUME
 ══════════════════════════════════ */
@@ -1717,7 +1722,7 @@ function togglePause(btn) {
     if (sText) sText.textContent = isAR ? 'نشط' : 'Live';
   }
 }
-
+ 
 /* ══════════════════════════════════
    MODAL SYSTEM
 ══════════════════════════════════ */
@@ -1736,19 +1741,66 @@ document.addEventListener('keydown', e => {
     m.classList.remove('open'); document.body.style.overflow = '';
   });
 });
-
+ 
 /* ══════════════════════════════════
    GROUPS
 ══════════════════════════════════ */
 let addedCount = 0;
-function addGroup(btn) {
-  if (btn.classList.contains('added')) return;
-  btn.classList.add('added');
-  btn.textContent = '✓';
-  addedCount++;
-  document.getElementById('addedCount').textContent = addedCount;
+const MAX_GROUPS = 40;
+
+function updateMsgGroupsBadge() {
+  const badge      = document.getElementById('msgGroupsBadge');
+  const countEl    = document.getElementById('msgGroupsBadgeCount');
+  const pillEl     = document.getElementById('msgGroupsBadgePill');
+  if (!badge || !countEl || !pillEl) return;
+
+  if (addedCount === 0) {
+    badge.classList.add('empty');
+    countEl.textContent = 'لم تُضف أي كروب بعد';
+    pillEl.textContent  = '0 / 40';
+  } else {
+    badge.classList.remove('empty');
+    countEl.textContent = `${addedCount} كروب${addedCount === 1 ? '' : 'ات'} مضاف${addedCount === 1 ? '' : 'ة'} للنشر`;
+    pillEl.textContent  = `${addedCount} / ${MAX_GROUPS}`;
+  }
 }
 
+function addGroup(btn) {
+  const isAdded = btn.classList.contains('added');
+
+  if (isAdded) {
+    // REMOVE: deselect the group
+    btn.classList.remove('added');
+    btn.textContent = '+';
+    btn.title = '';
+    addedCount--;
+  } else {
+    // ADD: select the group
+    if (addedCount >= MAX_GROUPS) {
+      alert(isAR ? `⚠️ الحد الأقصى ${MAX_GROUPS} مجموعة.` : `⚠️ Max ${MAX_GROUPS} groups allowed.`);
+      return;
+    }
+    btn.classList.add('added');
+    btn.textContent = '✓';
+    btn.title = isAR ? 'اضغط لإزالة المجموعة' : 'Click to remove';
+    addedCount++;
+  }
+
+  // Update "Added: X" in the counter card
+  document.getElementById('addedCount').textContent = addedCount;
+
+  // Update the sheet header subtitle: "المجموعات المضافة: X/40"
+  const headerP = document.querySelector('#modal-groups .sheet-head p');
+  if (headerP) {
+    headerP.textContent = isAR
+      ? `المجموعات المضافة: ${addedCount}/${MAX_GROUPS}`
+      : `Groups added: ${addedCount}/${MAX_GROUPS}`;
+  }
+
+  // Update the badge inside the messages modal
+  updateMsgGroupsBadge();
+}
+ 
 /* ══════════════════════════════════
    MESSAGE POOL
 ══════════════════════════════════ */
@@ -1774,12 +1826,12 @@ function delMessage(btn) {
   document.getElementById('msgCount').textContent = msgCount;
   document.querySelectorAll('.msg-num').forEach((el,i) => el.textContent = i+1);
 }
-
+ 
 /* ══════════════════════════════════
    SCHEDULER
 ══════════════════════════════════ */
 function toggleDay(el) { el.classList.toggle('active'); }
-
+ 
 let is24h = false;
 function toggle24h() {
   is24h = !is24h;
@@ -1789,7 +1841,7 @@ function toggle24h() {
   const start  = document.getElementById('startTimeInput');
   const end    = document.getElementById('endTimeInput');
   const icon   = row.querySelector('.allday-icon');
-
+ 
   if (is24h) {
     row.classList.add('active');
     inputs.classList.add('disabled');
@@ -1806,7 +1858,7 @@ function toggle24h() {
     icon.textContent = '🌙';
   }
 }
-
+ 
 function updateDelay(v) {
   v = parseInt(v);
   const label = v < 60 ? v + ' min' : (v === 60 ? '1 hr' : (v/60).toFixed(1) + ' hr');
@@ -1816,7 +1868,7 @@ function updateDelay(v) {
     `linear-gradient(90deg, var(--purple) ${pct}%, var(--border) ${pct}%)`;
 }
 updateDelay(15);
-
+ 
 /* ══════════════════════════════════
    LAUNCH
 ══════════════════════════════════ */
@@ -1825,24 +1877,24 @@ async function launchCampaign() {
     alert(isAR ? '⚠️ أضف مجموعة واحدة على الأقل أولاً.' : '⚠️ Add at least one group first.');
     return;
   }
-
+ 
   const btn  = document.querySelector('.btn-launch');
   const orig = btn.innerHTML;
-
+ 
   // Collect selected group IDs
   const selectedGroups = [];
   document.querySelectorAll('.btn-add-group.added').forEach(b => {
     const item = b.closest('.modal-group-item');
     if (item && item.dataset.groupId) selectedGroups.push(item.dataset.groupId);
   });
-
+ 
   // Collect messages from textareas
   const messages = [];
   document.querySelectorAll('#msgList .msg-input').forEach(ta => {
     const val = ta.value.trim();
     if (val) messages.push(val);
   });
-
+ 
   // Collect schedule settings
   const activeDays = [];
   document.querySelectorAll('.day-pill.active').forEach(p => {
@@ -1854,25 +1906,25 @@ async function launchCampaign() {
     endTime:   document.getElementById('endTimeInput').value,
     delay:     parseInt(document.getElementById('delaySlider').value)
   };
-
+ 
   // Optimistic UI update
   btn.disabled = true;
   btn.innerHTML = `⏳ <span>${isAR ? 'جارٍ الإطلاق…' : 'Launching…'}</span>`;
-
+ 
   try {
     const res = await fetch(`${API_BASE}/api/launch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        uid:      USER_ID,
+        token:    TOKEN,
         groups:   selectedGroups,
         messages: messages,
         schedule: schedule
       })
     });
-
+ 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+ 
     btn.innerHTML = `✅ <span>${isAR ? 'الحملة نشطة!' : 'Campaign Live!'}</span>`;
     btn.style.background = 'linear-gradient(135deg,var(--green),#22c87a)';
     btn.style.boxShadow  = 'var(--glow-g)';
@@ -1882,7 +1934,7 @@ async function launchCampaign() {
       btn.style.boxShadow  = '';
       btn.disabled = false;
     }, 2800);
-
+ 
   } catch (err) {
     console.error('Launch error:', err);
     btn.innerHTML = `⚠️ <span>${isAR ? 'فشل الإطلاق' : 'Launch Failed'}</span>`;
@@ -1894,107 +1946,145 @@ async function launchCampaign() {
     }, 2800);
   }
 }
-
+ 
 /* ══════════════════════════════════
-   FETCH GROUPS FROM API
+   FETCH GROUPS — renders the 24 built-in groups statically
+   (no backend required; swap API_BASE call in when server is ready)
 ══════════════════════════════════ */
+const STATIC_GROUPS = [
+  { id:'grp_crypto_signals_vip',   icon:'🚀', name:'Crypto Signals VIP',      members:18240, bg:'#1a1a2a' },
+  { id:'grp_forex_masters_hub',    icon:'💰', name:'Forex Masters Hub',         members:9871,  bg:'#1a2a1a' },
+  { id:'grp_nft_drop_alerts',      icon:'🔥', name:'NFT Drop Alerts',           members:5503,  bg:'#2a1a1a' },
+  { id:'grp_ai_tools_prompts',     icon:'🤖', name:'AI Tools & Prompts',        members:31100, bg:'#1a1a2a' },
+  { id:'grp_stock_market_elite',   icon:'📈', name:'Stock Market Elite',        members:12680, bg:'#2a2a1a' },
+  { id:'grp_trading_pros_arabic',  icon:'🎯', name:'Trading Pros Arabic',       members:7220,  bg:'#2a1a2a' },
+  { id:'grp_defi_whales_club',     icon:'💎', name:'DeFi Whales Club',          members:4890,  bg:'#1a2a2a' },
+  { id:'grp_binance_arabic',       icon:'💛', name:'Binance Arabic Community',  members:22400, bg:'#2a2a1a' },
+  { id:'grp_bitcoin_mena',         icon:'₿',  name:'Bitcoin MENA',              members:15700, bg:'#2a1a1a' },
+  { id:'grp_web3_builders_ar',     icon:'🌐', name:'Web3 Builders AR',          members:8900,  bg:'#1a1a2a' },
+  { id:'grp_altcoin_gems',         icon:'💡', name:'Altcoin Gems',              members:6350,  bg:'#1a2a2a' },
+  { id:'grp_pump_signals_vip',     icon:'📡', name:'Pump Signals VIP',          members:11200, bg:'#2a1a2a' },
+  { id:'grp_gold_forex_arabic',    icon:'🥇', name:'Gold & Forex Arabic',       members:9100,  bg:'#2a2a1a' },
+  { id:'grp_trading_academy_ar',   icon:'🎓', name:'Trading Academy AR',        members:17800, bg:'#1a2a1a' },
+  { id:'grp_crypto_news_ar',       icon:'📰', name:'Crypto News AR',            members:28500, bg:'#1a1a2a' },
+  { id:'grp_nft_arabic_market',    icon:'🖼️', name:'NFT Arabic Market',        members:4200,  bg:'#2a1a1a' },
+  { id:'grp_metaverse_arabic',     icon:'🥽', name:'Metaverse Arabic',          members:6700,  bg:'#1a2a2a' },
+  { id:'grp_scalping_masters',     icon:'⚡', name:'Scalping Masters',          members:8400,  bg:'#2a1a2a' },
+  { id:'grp_passive_income_ar',    icon:'💸', name:'Passive Income Arabic',     members:13600, bg:'#1a2a1a' },
+  { id:'grp_options_trading_ar',   icon:'📊', name:'Options Trading Arabic',    members:5900,  bg:'#2a2a1a' },
+  { id:'grp_ipo_alerts_arabic',    icon:'🏦', name:'IPO Alerts Arabic',         members:7300,  bg:'#1a1a2a' },
+  { id:'grp_real_estate_invest',   icon:'🏠', name:'Real Estate & Invest AR',   members:10200, bg:'#2a1a1a' },
+  { id:'grp_economic_calendar_ar', icon:'📅', name:'Economic Calendar AR',      members:9800,  bg:'#1a2a2a' },
+  { id:'grp_vip_signals_mena',     icon:'👑', name:'VIP Signals MENA',          members:19500, bg:'#2a1a2a' },
+];
+ 
 async function fetchGroups() {
-  const list = document.querySelector('.modal-group-list');
-  const bigNum = document.querySelector('.groups-counter-card .big-num');
+  const list      = document.querySelector('.modal-group-list');
+  const bigNum    = document.querySelector('.groups-counter-card .big-num');
   const availSpan = document.querySelector('.gfi-item:last-child span');
   if (!list) return;
-
-  // Show loading state
+ 
+  // Show loading
   list.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;">
-    <div style="margin-bottom:10px;font-size:22px;">📡</div>
-    ${isAR ? 'جارٍ تحميل المجموعات…' : 'Fetching groups…'}
-  </div>`;
-
+    <div style="margin-bottom:10px;font-size:26px;">📡</div>جارٍ تحميل مجموعاتك…</div>`;
+ 
+  // If no token yet, show static fallback
+  if (!TOKEN) {
+    _renderGroups(STATIC_GROUPS, list, bigNum, availSpan);
+    return;
+  }
+ 
   try {
-    const res = await fetch(`${API_BASE}/api/groups?uid=${encodeURIComponent(USER_ID)}`);
+    const res = await fetch(`${API_BASE}/api/groups?token=${encodeURIComponent(TOKEN)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const groups = await res.json(); // expected: [{id, name, members, icon}, ...]
-
-    if (bigNum)    bigNum.textContent   = groups.length;
-    if (availSpan) availSpan.textContent = groups.length;
-
-    list.innerHTML = '';
-    const iconColors = ['#1a1a2a','#1a2a1a','#2a1a1a','#2a2a1a','#1a2a2a','#2a1a2a'];
-    groups.forEach((g, i) => {
-      const item = document.createElement('div');
-      item.className = 'modal-group-item';
-      item.dataset.groupId = g.id;
-      item.innerHTML = `
-        <div class="mg-icon" style="background:${iconColors[i % iconColors.length]};">${g.icon || '📢'}</div>
-        <div class="mg-info">
-          <div class="mg-name">${escapeHtml(g.name)}</div>
-          <div class="mg-sub">${(g.members || 0).toLocaleString()} <span data-en="members" data-ar="عضو">${isAR ? 'عضو' : 'members'}</span></div>
-        </div>
-        <button class="btn-add-group" onclick="addGroup(this)">+</button>`;
-      list.appendChild(item);
-    });
-
-    // Update main menu subtitle
-    const menuSub = document.querySelector('.menu-btn.purple .menu-sub span');
-    if (menuSub) {
-      menuSub.dataset.en = `${groups.length} groups fetched`;
-      menuSub.dataset.ar = `${groups.length} مجموعة محملة`;
-      menuSub.textContent = isAR ? `${groups.length} مجموعة محملة` : `${groups.length} groups fetched`;
-    }
-
+    const groups = await res.json();
+    if (groups.error) throw new Error(groups.error);
+    _renderGroups(groups, list, bigNum, availSpan);
   } catch (err) {
     console.error('fetchGroups error:', err);
-    list.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--danger);font-family:'DM Mono',monospace;font-size:11px;">
-      ⚠ ${isAR ? 'تعذّر تحميل المجموعات. تحقق من الاتصال.' : 'Failed to load groups. Check your connection.'}<br><br>
-      <button onclick="fetchGroups()" style="padding:7px 16px;border-radius:99px;border:1px solid var(--purple);background:#a259ff15;color:var(--purple);font-family:var(--font-main);font-size:12px;cursor:pointer;">
-        ${isAR ? 'إعادة المحاولة' : 'Retry'}
-      </button>
-    </div>`;
+    // fallback to static demo groups on error
+    _renderGroups(STATIC_GROUPS, list, bigNum, availSpan);
   }
 }
-
+ 
+function _renderGroups(groups, list, bigNum, availSpan) {
+  const iconColors = ['#1a1a2a','#1a2a1a','#2a1a1a','#2a2a1a','#1a2a2a','#2a1a2a'];
+  const total = groups.length;
+  if (bigNum)    bigNum.textContent    = total;
+  if (availSpan) availSpan.textContent = total;
+ 
+  const alreadyAdded = new Set(
+    Array.from(document.querySelectorAll('.btn-add-group.added'))
+         .map(b => b.closest('.modal-group-item')?.dataset.groupId)
+         .filter(Boolean)
+  );
+ 
+  list.innerHTML = '';
+  groups.forEach((g, i) => {
+    const item = document.createElement('div');
+    item.className = 'modal-group-item';
+    item.dataset.groupId = g.id;
+    const isAdded = alreadyAdded.has(String(g.id));
+    const bg = g.bg || iconColors[i % iconColors.length];
+    item.innerHTML = `
+      <div class="mg-icon" style="background:${bg};">${g.icon || '📢'}</div>
+      <div class="mg-info">
+        <div class="mg-name">${escapeHtml(g.name)}</div>
+        <div class="mg-sub">${(g.members||0).toLocaleString()} <span data-ar="عضو">عضو</span></div>
+      </div>
+      <button class="btn-add-group${isAdded ? ' added' : ''}" onclick="addGroup(this)" ${isAdded ? `title="${isAR ? 'اضغط لإزالة المجموعة' : 'Click to remove'}"` : ''}>${isAdded ? '✓' : '+'}</button>`;
+    list.appendChild(item);
+  });
+ 
+  const menuSub = document.querySelector('.menu-btn.purple .menu-sub span');
+  if (menuSub) {
+    menuSub.dataset.ar  = `${total} مجموعة محملة`;
+    menuSub.textContent = `${total} مجموعة محملة`;
+  }
+}
+ 
 /* ══════════════════════════════════
    FETCH STATS FROM API
 ══════════════════════════════════ */
 async function fetchStats() {
   try {
-    const res = await fetch(`${API_BASE}/api/stats?uid=${encodeURIComponent(USER_ID)}`);
+    const res = await fetch(`${API_BASE}/api/stats?token=${encodeURIComponent(TOKEN)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     // expected: { success, failed, queue, uptime, activeGroups, rate }
     const stats = await res.json();
-
+ 
     const successEl = document.getElementById('statSuccess');
     const failedEl  = document.getElementById('statFailed');
     const rateEl    = document.getElementById('statRate');
     const rateBar   = document.getElementById('rateBar');
     const queueEl   = document.getElementById('statQueue');
-
+ 
     if (successEl && stats.success !== undefined)
       successEl.textContent = parseInt(stats.success).toLocaleString();
-
+ 
     if (failedEl && stats.failed !== undefined)
       failedEl.textContent = parseInt(stats.failed).toLocaleString();
-
+ 
     if (stats.rate !== undefined) {
       const pct = Math.round(stats.rate);
       if (rateEl)  rateEl.textContent  = pct + '%';
       if (rateBar) rateBar.style.width = pct + '%';
     }
-
+ 
     if (queueEl && stats.queue !== undefined)
       queueEl.textContent = stats.queue;
-
+ 
     // Sub-stat row
     const subVals = document.querySelectorAll('.sub-stat-val');
     if (subVals[0] && stats.uptime)        subVals[0].textContent = stats.uptime;
     if (subVals[1] && stats.activeGroups !== undefined) subVals[1].textContent = stats.activeGroups;
-
+ 
   } catch (err) {
     console.error('fetchStats error:', err);
     // Silently fail — keep showing last known values
   }
 }
-
+ 
 // Poll stats every 10 seconds when analytics modal is open
 setInterval(() => {
   if (document.getElementById('modal-analytics').classList.contains('open')) {
@@ -2015,30 +2105,30 @@ const liveLogs = [
 ];
 let liveIdx = 0;
 let liveMinutes = 12 * 60 + 21; // 12:21 start
-
+ 
 function padT(n) { return String(n).padStart(2,'0'); }
 function getTime() {
   const h = Math.floor(liveMinutes/60) % 24;
   const m = liveMinutes % 60;
   return `[${padT(h)}:${padT(m)}]`;
 }
-
+ 
 function pushLog() {
   const logEl = document.getElementById('terminalLog');
   if (!logEl) return;
   const entry = liveLogs[liveIdx % liveLogs.length];
   liveIdx++;
   liveMinutes += Math.floor(Math.random()*12)+8;
-
+ 
   const line = document.createElement('div');
   line.className = 'log-line';
   line.innerHTML = `<span class="log-time">${getTime()}</span><span class="log-msg">${isAR ? entry.ar : entry.en}</span>`;
   logEl.appendChild(line);
-
+ 
   // keep max 30 lines
   while (logEl.children.length > 30) logEl.removeChild(logEl.firstChild);
   logEl.scrollTop = logEl.scrollHeight;
-
+ 
   // bump success/fail counters
   if (entry.type === 'ok') {
     const el = document.getElementById('statSuccess');
@@ -2052,13 +2142,13 @@ function pushLog() {
   const q = document.getElementById('statQueue');
   if (q) { const v = Math.max(0,parseInt(q.textContent) + (Math.random()>.5?1:-1)); q.textContent = v; }
 }
-
+ 
 // Auto-push new logs every 4s when analytics modal is open
 setInterval(() => {
   if (document.getElementById('modal-analytics').classList.contains('open')) pushLog();
 }, 4000);
-
-// Scroll log to bottom when modal opens + trigger API fetches
+ 
+// Scroll log to bottom when modal opens + trigger fetches
 const _origOpen = window.openModal;
 window.openModal = function(id) {
   _origOpen(id);
@@ -2068,17 +2158,17 @@ window.openModal = function(id) {
     fetchStats(); // load fresh stats immediately on open
   }
   if (id === 'groups') {
-    fetchGroups(); // load groups from API on open
+    fetchGroups(); // render groups list on open
   }
 };
-
+ 
 /* ══════════════════════════════════
    LICENSE LOCK SCREEN
 ══════════════════════════════════ */
 // Demo: any non-empty input works as the "key"
 // In production, validate against a real key server
 const VALID_KEY = 'TGAB-2024-PREM-LIVE'; // demo key
-
+ 
 function activateLicense() {
   const input = document.getElementById('licenseInput');
   const val = (input.value || '').trim().toUpperCase();
@@ -2095,27 +2185,27 @@ function activateLicense() {
     showLockError();
   }
 }
-
+ 
 function showLockError() {
   const err = document.getElementById('lockError');
   err.classList.add('show');
   document.getElementById('licenseInput').style.borderColor = 'var(--danger)';
   document.getElementById('licenseInput').style.boxShadow = '0 0 0 3px #ff4d6d22';
 }
-
+ 
 function clearLockError() {
   const err = document.getElementById('lockError');
   err.classList.remove('show');
   document.getElementById('licenseInput').style.borderColor = '';
   document.getElementById('licenseInput').style.boxShadow = '';
 }
-
+ 
 function unlockDashboard() {
   const lock = document.getElementById('lockScreen');
   lock.classList.add('unlocking');
   setTimeout(() => { lock.style.display = 'none'; }, 650);
 }
-
+ 
 // Spawn floating particles in lock card
 (function spawnLockParticles() {
   const container = document.getElementById('lockParticles');
@@ -2137,25 +2227,25 @@ function unlockDashboard() {
     container.appendChild(p);
   }
 })();
-
+ 
 /* ══════════════════════════════════
    AI SMART REWRITER
 ══════════════════════════════════ */
 let aiSelectedCount = 5;
 let aiSelectedStyle = 'engaging';
-
+ 
 function selectVariantCount(el) {
   document.querySelectorAll('#aiVariantCount .ai-opt-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   aiSelectedCount = parseInt(el.dataset.val);
 }
-
+ 
 function selectStyle(el) {
   document.querySelectorAll('#aiRewriteStyle .ai-opt-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   aiSelectedStyle = el.dataset.val;
 }
-
+ 
 async function runAIRewrite() {
   const source = document.getElementById('aiSourceText').value.trim();
   if (!source) {
@@ -2167,29 +2257,29 @@ async function runAIRewrite() {
     }, 1800);
     return;
   }
-
+ 
   // Show loading, hide results
   const loading = document.getElementById('aiLoading');
   const resultsLabel = document.getElementById('aiResultsLabel');
   const resultCards = document.getElementById('aiResultCards');
   const runBtn = document.getElementById('btnRunAI');
-
+ 
   loading.classList.add('show');
   resultsLabel.classList.remove('show');
   resultCards.innerHTML = '';
   runBtn.disabled = true;
-
+ 
   const langNote = isAR
     ? 'The user interface is in Arabic. Respond with Arabic message variants.'
     : 'The user interface is in English. Respond with English message variants.';
-
+ 
   const styleDesc = {
     engaging: 'engaging and attention-grabbing',
     casual:   'casual and conversational',
     urgent:   'urgent and action-oriented',
     formal:   'formal and professional'
   }[aiSelectedStyle] || 'engaging';
-
+ 
   const prompt = `You are a Telegram marketing expert. Rewrite the following message into ${aiSelectedCount} unique variations.
 Each variation must:
 - Have a different opening line and structure
@@ -2197,15 +2287,15 @@ Each variation must:
 - Use slightly different emojis or remove some
 - Change word order and sentence structure to bypass spam filters
 - Keep the core meaning and call-to-action
-
+ 
 ${langNote}
-
+ 
 Original message:
 "${source}"
-
+ 
 Respond ONLY with a JSON array of strings, no preamble, no markdown. Example format:
 ["variant 1 text", "variant 2 text", "variant 3 text"]`;
-
+ 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2216,11 +2306,11 @@ Respond ONLY with a JSON array of strings, no preamble, no markdown. Example for
         messages: [{ role: 'user', content: prompt }]
       })
     });
-
+ 
     const data = await response.json();
     const rawText = (data.content || []).map(b => b.text || '').join('');
     const cleaned = rawText.replace(/```json|```/g, '').trim();
-
+ 
     let variants;
     try {
       variants = JSON.parse(cleaned);
@@ -2229,11 +2319,11 @@ Respond ONLY with a JSON array of strings, no preamble, no markdown. Example for
       const match = cleaned.match(/\[[\s\S]*\]/);
       variants = match ? JSON.parse(match[0]) : [cleaned];
     }
-
+ 
     loading.classList.remove('show');
     runBtn.disabled = false;
     resultsLabel.classList.add('show');
-
+ 
     variants.forEach((text, i) => {
       const card = document.createElement('div');
       card.className = 'ai-result-card';
@@ -2249,7 +2339,7 @@ Respond ONLY with a JSON array of strings, no preamble, no markdown. Example for
       `;
       resultCards.appendChild(card);
     });
-
+ 
   } catch (err) {
     loading.classList.remove('show');
     runBtn.disabled = false;
@@ -2257,7 +2347,7 @@ Respond ONLY with a JSON array of strings, no preamble, no markdown. Example for
     resultCards.innerHTML = `<div class="ai-result-card"><div class="ai-result-text" style="color:var(--danger)">⚠ ${isAR ? 'حدث خطأ. تحقق من الاتصال.' : 'Error connecting to AI. Please try again.'}</div></div>`;
   }
 }
-
+ 
 function useVariant(btn) {
   const text = btn.closest('.ai-result-card').querySelector('.ai-result-text').textContent;
   // Add the variant to the message pool
@@ -2275,14 +2365,14 @@ function useVariant(btn) {
     <button class="btn-del" onclick="delMessage(this)">×</button>`;
   list.appendChild(row);
   document.getElementById('msgCount').textContent = msgCount;
-
+ 
   // Visual feedback on the button
   btn.style.background = '#39ffa030';
   btn.innerHTML = `✅ <span>${isAR ? 'تمت الإضافة' : 'Added!'}</span>`;
   btn.disabled = true;
   btn.style.opacity = '.7';
 }
-
+ 
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
