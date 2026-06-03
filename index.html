@@ -1860,9 +1860,26 @@ function loginWithGoogle() {
   google.accounts.id.initialize({
     client_id: '316214794759-jqbd46lca0kpdeug8mvt71vasv9s74bj.apps.googleusercontent.com',
     callback: handleGoogleLogin,
-    auto_select: false
+    auto_select: false,
+    ux_mode: 'popup'
   });
-  google.accounts.id.prompt();
+  // إنشاء زر مخفي وضغطه لفتح نافذة اختيار الحساب
+  const btnDiv = document.createElement('div');
+  btnDiv.style.display = 'none';
+  document.body.appendChild(btnDiv);
+  google.accounts.id.renderButton(btnDiv, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'large'
+  });
+  const gBtn = btnDiv.querySelector('div[role=button]');
+  if (gBtn) {
+    gBtn.click();
+    setTimeout(() => document.body.removeChild(btnDiv), 3000);
+  } else {
+    google.accounts.id.prompt();
+    setTimeout(() => document.body.removeChild(btnDiv), 3000);
+  }
 }
 
 function loginWithEmail() {
