@@ -1859,7 +1859,7 @@ function loginWithGoogle() {
   }
   // استخدم OAuth2 redirect — الأكثر موثوقية داخل Telegram WebApp والمتصفحات
   const clientId = '316214794759-jqbd46lca0kpdeug8mvt71vasv9s74bj.apps.googleusercontent.com';
-  const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+  const redirectUri = encodeURIComponent('https://telegramaibot-production-4017.up.railway.app/app');
   const scope = encodeURIComponent('openid email profile');
   const state = Math.random().toString(36).slice(2);
   sessionStorage.setItem('google_state', state);
