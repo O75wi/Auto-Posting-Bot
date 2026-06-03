@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#ffffff" />
   <title>White Follow</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +33,7 @@
       --red:          #E53E3E;
       --shadow-xs:    0 1px 3px rgba(0,0,0,0.07);
       --shadow-sm:    0 2px 10px rgba(0,0,0,0.07), 0 0 1px rgba(0,0,0,0.04);
-      --shadow-md:    0 6px 24 rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md:    0 6px 24px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.05);
       --shadow-press: 0 1px 4px rgba(0,0,0,0.07);
       --r:            16px;
       --r-sm:         12px;
@@ -50,12 +51,11 @@
     }
 
     .app {
-      position: relative;
+      position: fixed;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%;
       max-width: 480px;
-      margin: 0 auto;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
+      height: 100dvh;
       overflow: hidden;
     }
 
@@ -70,11 +70,12 @@
       transition: transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s cubic-bezier(0.4,0,0.2,1);
       will-change: transform, opacity;
       -webkit-overflow-scrolling: touch;
+      height: 100%;
     }
 
-    .page.slide-right { transform: translateX(-100%); opacity: 0; pointer-events: none; }
-    .page.slide-left  { transform: translateX(100%);  opacity: 0; pointer-events: none; }
-    .page.active      { transform: translateX(0); opacity: 1; pointer-events: all; position: relative; }
+    .page.slide-right { transform: translateX(-100%); opacity: 0; pointer-events: none; z-index: 1; visibility: hidden; }
+    .page.slide-left  { transform: translateX(100%);  opacity: 0; pointer-events: none; z-index: 1; visibility: hidden; }
+    .page.active      { transform: translateX(0); opacity: 1; pointer-events: all; z-index: 10; visibility: visible; }
 
     .page-header {
       background: var(--card);
@@ -122,8 +123,10 @@
     .menu-item:active { transform: scale(0.985); background: var(--card-hover); box-shadow: var(--shadow-press); }
     .menu-item-icon { font-size: 20px; margin-left: 14px; flex-shrink: 0; width: 36px; height: 36px; background: var(--bg); display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); }
     .menu-item-content { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .menu-item-text { font-size: 14.5px; font-weight: 700; color: var(--text-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .menu-item-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .menu-item-text { font-size: 14px; font-weight: 700; color: var(--text-h); white-space: normal; line-height: 1.35; }
+    .menu-item-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; white-space: nowrap; }
+    .price-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(218,165,32,0.15); border: 1px solid rgba(218,165,32,0.4); color: #9a6e00; padding: 3px 8px; border-radius: 7px; font-size: 12.5px; font-weight: 700; margin-top: 5px; width: fit-content; align-self: flex-start; }
+    .price-badge svg { width: 12px; height: 12px; fill: #B8860B; flex-shrink: 0; }
     .menu-item-arrow { color: var(--text-muted); opacity: 0.6; flex-shrink: 0; margin-right: 8px; display: flex; align-items: center; }
     .menu-item-arrow svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -163,8 +166,8 @@
     .modal-input:focus { border-color: var(--accent); background: var(--card); }
     .modal-input-suffix { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 700; color: var(--text-muted); }
 
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50(), 20px); background: #000; color: #fff; padding: 12px 22px; border-radius: 100px; font-size: 13.5px; font-weight: 600; opacity: 0; pointer-events: none; transition: transform 0.2s ease, opacity 0.2s ease; z-index: 200; box-shadow: var(--shadow-md); white-space: nowrap; }
-    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #000; color: #fff; padding: 12px 22px; border-radius: 100px; font-size: 13.5px; font-weight: 600; opacity: 0; pointer-events: none; transition: transform 0.2s ease, opacity 0.2s ease; z-index: 200; box-shadow: var(--shadow-md); white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.success { background: var(--green); }
     .toast.error { background: var(--red); }
 
@@ -195,15 +198,117 @@
     .stats-card { margin: 10px 20px 0; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 20px; text-align: center; }
     .stats-card h2 { font-size: 24px; font-weight: 800; color: var(--text-h); margin: 0 0 4px; }
     .stats-card p { font-size: 13px; color: var(--text-muted); margin: 0; }
-    #settingsBtn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 22px; padding: 4px; display: flex; align-items: center; justify-content: center; }
+    #settingsBtn { display: none; }
+
+    /* ── Login Page ── */
+    #page-login { background: #0A0A0A; justify-content: center; align-items: center; }
+    .login-wrap { width: 100%; padding: 40px 28px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .login-logo { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .login-sub  { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 40px; }
+    .login-btn  {
+      width: 100%; height: 52px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06); color: #fff; font-family: var(--font); font-size: 15px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: background 0.18s, border-color 0.18s; margin-bottom: 12px;
+    }
+    .login-btn:active { background: rgba(255,255,255,0.12); }
+    .login-btn.tg  { border-color: rgba(41,182,246,0.4); }
+    .login-btn.gm  { border-color: rgba(234,67,53,0.4); }
+    .login-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .login-divider { width: 100%; text-align: center; color: rgba(255,255,255,0.25); font-size: 12px; margin: 8px 0 20px; position: relative; }
+    .login-divider::before, .login-divider::after { content:''; position: absolute; top: 50%; width: 38%; height: 1px; background: rgba(255,255,255,0.1); }
+    .login-divider::before { right: 0; } .login-divider::after { left: 0; }
+    .login-input { width: 100%; height: 50px; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0 16px; font-family: var(--font); font-size: 14px; color: #fff; outline: none; margin-bottom: 12px; }
+    .login-input::placeholder { color: rgba(255,255,255,0.3); }
+    .login-input:focus { border-color: rgba(255,255,255,0.3); }
+    .login-submit { width: 100%; height: 52px; background: #fff; color: #0A0A0A; border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 4px; transition: opacity 0.18s; }
+    .login-submit:active { opacity: 0.85; }
+    .login-footer { font-size: 11.5px; color: rgba(255,255,255,0.25); margin-top: 28px; text-align: center; }
+
+    /* Hide bottom nav on login */
+    .bottom-nav.hidden { display: none !important; }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: stretch;
+      z-index: 50;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bottom-nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 10px 6px; border: none; background: none; cursor: pointer;
+      font-family: var(--font); font-size: 11.5px; font-weight: 600; color: var(--text-muted);
+      transition: color 0.18s;
+    }
+    .bottom-nav-item.active { color: var(--accent); }
+    .bottom-nav-item svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+    /* Add bottom padding so content isn't hidden behind nav */
+    .page-content { padding-bottom: 80px !important; }
+    .page-footer   { padding-bottom: 90px !important; }
+
+    /* Orders page styles */
+    #page-orders { background: var(--bg); }
+    .orders-filter { display: flex; gap: 8px; padding: 14px 20px 6px; overflow-x: auto; }
+    .orders-filter::-webkit-scrollbar { display: none; }
+    .filter-chip { flex-shrink: 0; height: 32px; padding: 0 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--card); font-family: var(--font); font-size: 12.5px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.18s; }
+    .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .order-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-xs); }
+    .order-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+    .order-info { flex: 1; min-width: 0; }
+    .order-name { font-size: 13.5px; font-weight: 700; color: var(--text-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .order-qty { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .order-status { font-size: 12px; font-weight: 700; }
+    .order-status.complete { color: var(--green); }
+    .order-status.active   { color: #F59E0B; }
+    .order-status.pending  { color: #6B7280; }
+    .order-status.cancelled{ color: var(--red); }
+    .order-arrow { color: var(--text-muted); opacity: 0.5; }
+    .order-arrow svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
 <body>
 
 <div class="app">
 
+  <!-- PAGE LOGIN -->
+  <section class="page active" id="page-login">
+    <div class="login-wrap">
+      <p class="login-logo">⚡ White Follow</p>
+      <p class="login-sub">سجل دخول للمتابعة</p>
+
+      <!-- تلكرام -->
+      <button class="login-btn tg" onclick="loginWithTelegram()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21.8 2.4L2.5 9.9c-1.3.5-1.3 1.3-.2 1.6l4.8 1.5 1.8 5.6c.2.7.4.9 1 .9.5 0 .7-.2 1-.5l2.5-2.4 4.9 3.6c.9.5 1.6.2 1.8-.8l3.3-15.6c.3-1.3-.5-1.9-1.6-1.4z" fill="#29B6F6"/></svg>
+        تسجيل عبر تلكرام
+      </button>
+
+      <!-- جوجل — Google One Tap -->
+      <div id="g_id_onload"
+           data-client_id="316214794759-jqbd46lca0kpdeug8mvt71vasv9s74bj.apps.googleusercontent.com"
+           data-callback="handleGoogleLogin"
+           data-auto_prompt="false">
+      </div>
+      <button class="login-btn gm" onclick="loginWithGoogle()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        تسجيل عبر جوجل
+      </button>
+
+      <div class="login-divider">أو بالبريد الإلكتروني</div>
+
+      <input class="login-input" id="login-email" type="email" placeholder="البريد الإلكتروني" />
+      <input class="login-input" id="login-pass"  type="password" placeholder="كلمة المرور" />
+      <button class="login-submit" onclick="loginWithEmail()">دخول</button>
+
+      <p class="login-footer">White Follow © 2025 — جميع الحقوق محفوظة</p>
+    </div>
+  </section>
+
   <!-- PAGE 1 — MAIN MENU -->
-  <section class="page page-main active" id="page-main">
+  <section class="page page-main slide-right" id="page-main">
     <header class="page-header">
       <div class="top-bar">
         <div style="display:flex;align-items:center;gap:8px;">
@@ -213,7 +318,7 @@
         <div class="balance-widget">
           <div class="balance-block">
             <p class="balance-label">رصيد الحساب</p>
-            <p class="balance-amount"><span id="balance-display">0.00</span><span class="balance-currency">ر.س</span></p>
+            <p class="balance-amount"><span id="balance-display">0.00</span><span class="balance-currency">د.ع</span></p>
           </div>
           <button class="btn-add-balance" id="btn-add-balance"><svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         </div>
@@ -301,111 +406,485 @@
   </section>
 
   <!-- PAGE 7 — تيليجرام مميز -->
-  <!-- DYNAMIC SUBSCRIPTION FORM -->
-  <section class="page slide-right" id="page-form-subs-dynamic">
-    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="dynamic-sub-title">الاشتراك</h2></div></div></header>
-    <div class="page-content">
-      <div class="form-section">
-        <div><p class="form-label">اختر باقة الاشتراك</p><select class="form-input service-type" id="sub-service-select"></select></div>
-        <div><p class="form-label">البريد الإلكتروني أو الحساب المراد تفعيله</p><input class="form-input link-input" id="sub-email-input" type="text" placeholder="أدخل البريد الإلكتروني أو اسم المستخدم" /></div>
-        <div class="price-preview hidden" id="sub-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>ر.س</span> <span class="calc-price" id="sub-calc-price">0.00</span></span></div>
-        <p class="balance-warn" id="sub-balance-warn">⚠️ رصيدك غير كافٍ</p>
-        <button class="btn-confirm order-btn" data-form="subs-dynamic">تأكيد الاشتراك</button>
-      </div>
-    </div>
-  </section>
 
-  <!-- DYNAMIC PHONE TOPUP FORM -->
-  <section class="page slide-right" id="page-form-phone-dynamic">
-    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="dynamic-phone-title">شحن الرصيد</h2></div></div></header>
-    <div class="page-content">
-      <div class="form-section">
-        <div><p class="form-label">باقة الشحن المتوفرة</p><select class="form-input service-type" id="phone-service-select"></select></div>
-        <div><p class="form-label">رقم الهاتف المراد شحنه (مع رمز الدولة)</p><input class="form-input link-input" id="phone-number-input" type="tel" inputmode="tel" placeholder="مثال: 00964..." /></div>
-        <div class="price-preview hidden" id="phone-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>ر.س</span> <span class="calc-price" id="phone-calc-price">0.00</span></span></div>
-        <p class="balance-warn" id="phone-balance-warn">⚠️ رصيدك غير كافٍ</p>
-        <button class="btn-confirm order-btn" data-form="phone-dynamic">تأكيد شحن الخط</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- DYNAMIC CARDS FORM -->
-  <section class="page slide-right" id="page-form-cards-dynamic">
-    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="dynamic-card-title">البطاقة</h2></div></div></header>
-    <div class="page-content">
-      <div class="form-section">
-        <div><p class="form-label">الفئة السعرية المتوفرة</p><select class="form-input service-type" id="card-service-select"></select></div>
-        <div class="price-preview hidden" id="card-price-preview"><span class="price-label">السعر</span><span class="price-value"><span>ر.س</span> <span class="calc-price" id="card-calc-price">0.00</span></span></div>
-        <p class="balance-warn" id="card-balance-warn">⚠️ لا يوجد رصيد</p>
-        <button class="btn-confirm order-btn" data-form="cards-dynamic">تأكيد وشراء البطاقة</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- DYNAMIC GAMES FORM -->
-  <section class="page slide-right" id="page-form-games-dynamic">
-    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="dynamic-game-title">الشحن</h2></div></div></header>
-    <div class="page-content">
-      <div class="form-section">
-        <div><p class="form-label">الحزمة / عدد الجواهر أو الشدات</p><select class="form-input service-type" id="game-service-select"></select></div>
-        <div><p class="form-label">معرف اللاعب ID</p><input class="form-input link-input" type="text" placeholder="أدخل الـ ID الخاص بك في اللعبة" /></div>
-        <div class="price-preview hidden" id="game-price-preview"><span class="price-label">السعر</span><span class="price-value"><span>ر.س</span> <span class="calc-price" id="game-calc-price">0.00</span></span></div>
-        <p class="balance-warn" id="game-balance-warn">⚠️ لا يوجد رصيد</p>
-        <button class="btn-confirm order-btn" data-form="games-dynamic">تأكيد الطلب</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- INSTAGRAM WHITE FORM -->
+  <!-- INSTAGRAM WHITE — قائمة الخدمات -->
   <section class="page slide-right" id="page-form-insta-white">
     <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="white-services"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title">انستغرام وايت</h2></div></div></header>
     <div class="page-content">
+      <p class="section-label">اختر الخدمة المطلوبة</p>
+      <button class="menu-item" onclick="openInstaService('ديفل | متابعين انستا ضمان 90 يوم','devil','0.74')"><span class="menu-item-icon">🔥</span><div class="menu-item-content"><span class="menu-item-text">ديفل | متابعين انستا ضمان 90 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.74</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('ايس | متابعين انستا بدون نزول','ice','1.3')"><span class="menu-item-icon">❄️</span><div class="menu-item-content"><span class="menu-item-text">ايس | متابعين انستا بدون نزول</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.3</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('شارك | متابعين انستا تعويض مدى الحياة','shark','1.0')"><span class="menu-item-icon">🦈</span><div class="menu-item-content"><span class="menu-item-text">شارك | متابعين انستا تعويض مدى الحياة</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.0</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('جوكر | متابعين انستا تعويض 365 يوم','joker','0.9')"><span class="menu-item-icon">🃏</span><div class="menu-item-content"><span class="menu-item-text">جوكر | متابعين انستا تعويض 365 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.9</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('دراجون | متابعين انستا التحديث الجديد','dragon','1.0')"><span class="menu-item-icon">🐉</span><div class="menu-item-content"><span class="menu-item-text">دراجون | متابعين انستا التحديث الجديد</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.0</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('فالكون | متابعين انستا التحديث الجديد','falcon','1.2')"><span class="menu-item-icon">🦅</span><div class="menu-item-content"><span class="menu-item-text">فالكون | متابعين انستا التحديث الجديد</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.2</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('لونغ | متابعين انستا ضمان 365 يوم','long','1.4')"><span class="menu-item-icon">🐲</span><div class="menu-item-content"><span class="menu-item-text">لونغ | متابعين انستا ضمان 365 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.4</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('بير | متابعين انستا تعويض 120 يوم','bear','0.92')"><span class="menu-item-icon">🐻</span><div class="menu-item-content"><span class="menu-item-text">بير | متابعين انستا تعويض 120 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.92</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('اناكوندا | متابعين انستا ضمان 90 يوم','anaconda','1.3')"><span class="menu-item-icon">🐍</span><div class="menu-item-content"><span class="menu-item-text">اناكوندا | متابعين انستا ضمان 90 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.3</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('باندا | متابعين انستا ضمان 60 يوم','panda','1.2')"><span class="menu-item-icon">🐼</span><div class="menu-item-content"><span class="menu-item-text">باندا | متابعين انستا ضمان 60 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.2</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openInstaService('تايكر | متابعين انستا زر تعويض ضمان 30 يوم','tiger','0.77')"><span class="menu-item-icon">🐯</span><div class="menu-item-content"><span class="menu-item-text">تايكر | متابعين انستا زر تعويض ضمان 30 يوم</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.77</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <!-- INSTAGRAM WHITE — فورم الطلب الديناميكي -->
+  <section class="page slide-right" id="page-form-insta-service">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="form-insta-white"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="insta-service-title">الخدمة</h2></div></div></header>
+    <div class="page-content">
       <div class="form-section">
+        <input type="hidden" id="insta-service-value" />
+        <input type="hidden" id="insta-service-rate" />
         <div>
-          <p class="form-label">اختر الخدمة المطلوبة</p>
-          <select class="form-input service-type" id="insta-white-select">
-            <option value="" selected disabled>— اختر الخدمة —</option>
-            <option value="devil" data-rate="0.74">ديفل | متابعين انستا ضمان 90 يوم</option>
-            <option value="ice" data-rate="1.3">ايس | متابعين انستا بدون نزول</option>
-            <option value="shark" data-rate="1.0">شارك | متابعين انستا تعويض مدى الحياة</option>
-            <option value="joker" data-rate="0.9">جوكر | متابعين انستا تعويض 365 يوم</option>
-            <option value="dragon" data-rate="1.0">دراجون | متابعين انستا التحديث الجديد</option>
-            <option value="falcon" data-rate="1.2">فالكون | متابعين انستا التحديث الجديد</option>
-            <option value="long" data-rate="1.4">لونغ | متابعين انستا ضمان 365 يوم</option>
-            <option value="bear" data-rate="0.92">بير | متابعين انستا تعويض 120 يوم</option>
-            <option value="anaconda" data-rate="1.3">اناكوندا | متابعين انستا ضمان 90 يوم</option>
-            <option value="panda" data-rate="1.2">باندا | متابعين انستا ضمان 60 يوم</option>
-            <option value="tiger" data-rate="0.77">تايكر | متابعين انستا زر تعويض ضمان 30 يوم</option>
-          </select>
-          
-          <div id="insta-cart-badge-wrap" style="display: none; margin-top: 6px;">
-            <div class="cart-badge">
-              <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-              $<span id="insta-badge-rate">0.00</span>
-            </div>
-          </div>
+          <p class="form-label">الخدمة المختارة</p>
+          <p id="insta-service-name-display" style="font-size:14px;font-weight:600;color:var(--text-h);padding:10px 14px;background:var(--bg);border-radius:var(--r-sm);">—</p>
         </div>
-        
-        <div><p class="form-label">الرابط</p><input class="form-input link-input" type="text" placeholder="ضع رابط الحساب هنا" /></div>
-        <div><p class="form-label">الكمية</p><input class="form-input qty-input" type="number" value="1" min="1" id="insta-white-qty" /></div>
-        
-        <div class="price-preview hidden"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>ر.س</span> <span class="calc-price">0.00</span></span></div>
-        <p class="balance-warn">⚠️ رصيدك غير كافٍ للعملية</p>
-        <button class="btn-confirm order-btn" data-form="insta-white">إرسال الطلب فوراً</button>
+        <div><p class="form-label">الرابط</p><input class="form-input" id="insta-svc-link" type="text" placeholder="ضع رابط الحساب هنا" /></div>
+        <div><p class="form-label">الكمية</p><input class="form-input" id="insta-svc-qty" type="number" value="1000" min="1" /></div>
+        <div class="price-preview hidden" id="insta-svc-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>د.ع</span> <span id="insta-svc-calc-price">0.00</span></span></div>
+        <p class="balance-warn" id="insta-svc-balance-warn">⚠️ رصيدك غير كافٍ للعملية</p>
+        <button class="btn-confirm" id="insta-svc-order-btn">إرسال الطلب فوراً</button>
       </div>
     </div>
   </section>
 
-  <!-- TELEGRAM WHITE FORM -->
+  <!-- TELEGRAM WHITE — قائمة الخدمات -->
   <section class="page slide-right" id="page-form-telegram-white">
     <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="white-services"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title">تيليجرام وايت</h2></div></div></header>
-    <div class="page-content"><div class="form-section"><div><p class="form-label">الخدمة</p><select class="form-input service-type"><option value="m" data-rate="0.015">أعضاء تليجرام سريع</option></select></div><div><p class="form-label">الرابط</p><input class="form-input link-input" type="text" placeholder="رابط القناة أو المجموعة" /></div><div><p class="form-label">الكمية</p><input class="form-input qty-input" type="number" value="100" /></div><div class="price-preview hidden"><span class="price-label">السعر</span><span class="price-value"><span>ر.س</span> <span class="calc-price">0.00</span></span></div><button class="btn-confirm order-btn" data-form="telegram-white">إرسال</button></div></div>
+    <div class="page-content">
+      <p class="section-label">اختر الخدمة المطلوبة</p>
+      <button class="menu-item" onclick="openTeleService('أعضاء تليجرام حسابات محذوفة ( عرض محدود )','tg_deleted_limited','0.6')"><span class="menu-item-icon">✈️</span><div class="menu-item-content"><span class="menu-item-text">أعضاء تليجرام حسابات محذوفة ( عرض محدود )</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.6</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام حسابات محذوفه ( بدون نزول )','tg_deleted_nodrop','0.8')"><span class="menu-item-icon">🔥</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام حسابات محذوفه ( بدون نزول )</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.8</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام مدى الحياة ( للكميات ) + مملوكه','tg_lifetime','0.89')"><span class="menu-item-icon">♾️</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام مدى الحياة ( للكميات ) + مملوكه</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.89</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام بدون نزول للابد (مملوكه)','tg_forever','1.0')"><span class="menu-item-icon">💎</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام بدون نزول للابد (مملوكه)</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.0</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام متصلين','tg_online','0.54')"><span class="menu-item-icon">🟢</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام متصلين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.54</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام انضمام عن طريق البحث (مملوكه)','tg_search','1.7')"><span class="menu-item-icon">🔍</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام انضمام عن طريق البحث (مملوكه)</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$1.7</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام رخيص (مملوكه)','tg_cheap','0.07')"><span class="menu-item-icon">💰</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام رخيص (مملوكه)</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.07</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام بدون نزول 30 يوم ( فوريه )','tg_nodrop30','0.84')"><span class="menu-item-icon">⚡</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام بدون نزول 30 يوم ( فوريه )</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.84</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام بدون نزول 15 يوم ( بطيئ )','tg_nodrop15','0.25')"><span class="menu-item-icon">🐢</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام بدون نزول 15 يوم ( بطيئ )</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.25</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openTeleService('اعضاء تليجرام بدون نزول 7 ايام ( بطيئ )','tg_nodrop7','0.14')"><span class="menu-item-icon">📅</span><div class="menu-item-content"><span class="menu-item-text">اعضاء تليجرام بدون نزول 7 ايام ( بطيئ )</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>$0.14</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
   </section>
 
-</div>
+  <!-- TELEGRAM WHITE — فورم الطلب الديناميكي -->
+  <section class="page slide-right" id="page-form-tele-service">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="form-telegram-white"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="tele-service-title">الخدمة</h2></div></div></header>
+    <div class="page-content">
+      <div class="form-section">
+        <input type="hidden" id="tele-service-value" />
+        <input type="hidden" id="tele-service-rate" />
+        <div>
+          <p class="form-label">الخدمة المختارة</p>
+          <p id="tele-service-name-display" style="font-size:14px;font-weight:600;color:var(--text-h);padding:10px 14px;background:var(--bg);border-radius:var(--r-sm);">—</p>
+        </div>
+        <div><p class="form-label">الرابط</p><input class="form-input" id="tele-svc-link" type="text" placeholder="رابط القناة أو المجموعة" /></div>
+        <div><p class="form-label">الكمية</p><input class="form-input" id="tele-svc-qty" type="number" value="1000" min="1" /></div>
+        <div class="price-preview hidden" id="tele-svc-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>د.ع</span> <span id="tele-svc-calc-price">0.00</span></span></div>
+        <p class="balance-warn" id="tele-svc-balance-warn">⚠️ رصيدك غير كافٍ للعملية</p>
+        <button class="btn-confirm" id="tele-svc-order-btn">إرسال الطلب فوراً</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORDERS PAGE -->
+  <section class="page slide-right" id="page-orders">
+    <header class="page-header">
+      <div class="top-bar">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="brand-pill"><span class="brand-dot"></span>White Follow</div>
+        </div>
+        <div class="balance-widget">
+          <div class="balance-block">
+            <p class="balance-label">رصيد الحساب</p>
+            <p class="balance-amount"><span id="balance-display-orders">0.00</span><span class="balance-currency">د.ع</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="header-title-row">
+        <h1 class="page-title">طلباتي</h1>
+        <p class="page-sub">سجل الطلبات المنفذة</p>
+      </div>
+    </header>
+    <div class="orders-filter">
+      <button class="filter-chip active" onclick="filterOrders('all',this)">الجميع</button>
+      <button class="filter-chip" onclick="filterOrders('complete',this)">مكتمل</button>
+      <button class="filter-chip" onclick="filterOrders('active',this)">نشيط</button>
+      <button class="filter-chip" onclick="filterOrders('partial',this)">جزئي</button>
+      <button class="filter-chip" onclick="filterOrders('pending',this)">قيد الانتظار</button>
+      <button class="filter-chip" onclick="filterOrders('cancelled',this)">ألغيت</button>
+    </div>
+    <div class="page-content" id="orders-list">
+      <p style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:14px;">لا توجد طلبات بعد</p>
+    </div>
+  </section>
+
+  <!-- SETTINGS PAGE (القائمة) -->
+  <section class="page slide-right" id="page-menu">
+    <header class="page-header">
+      <div class="top-bar">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="brand-pill"><span class="brand-dot"></span>White Follow</div>
+        </div>
+        <div class="balance-widget">
+          <div class="balance-block">
+            <p class="balance-label">رصيد الحساب</p>
+            <p class="balance-amount"><span id="balance-display-menu">0.00</span><span class="balance-currency">د.ع</span></p>
+          </div>
+          <button class="btn-add-balance" id="btn-add-balance-menu"><svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        </div>
+      </div>
+      <div class="header-title-row">
+        <h1 class="page-title">القائمة</h1>
+        <p class="page-sub">الإعدادات والمعلومات</p>
+      </div>
+    </header>
+    <div class="page-content">
+      <p class="section-label">الحساب</p>
+      <button class="menu-item" onclick="openSettingsModal()">
+        <span class="menu-item-icon">⚙️</span>
+        <div class="menu-item-content"><span class="menu-item-text">الإعدادات</span><span class="menu-item-sub">API والرمز والمعرف</span></div>
+        <span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+      <p class="section-label" style="margin-top:12px;">معلومات</p>
+      <button class="menu-item" onclick="window.open('https://t.me/o75ei','_blank')">
+        <span class="menu-item-icon">💬</span>
+        <div class="menu-item-content"><span class="menu-item-text">دعم فني</span><span class="menu-item-sub">تواصل معنا على تلكرام</span></div>
+        <span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+      <button class="menu-item" onclick="showToast('قريباً', 'success')">
+        <span class="menu-item-icon">🎁</span>
+        <div class="menu-item-content"><span class="menu-item-text">احصل على رصيد مجاني</span></div>
+        <span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+      <button class="menu-item" onclick="showToast('قريباً', 'success')">
+        <span class="menu-item-icon">📋</span>
+        <div class="menu-item-content"><span class="menu-item-text">سياسة الاستخدام</span></div>
+        <span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav hidden" id="bottom-nav">
+    <button class="bottom-nav-item" id="nav-menu" onclick="switchTab('menu')">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      القائمة
+    </button>
+    <button class="bottom-nav-item" id="nav-main" onclick="switchTab('main')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      الخدمات
+    </button>
+    <button class="bottom-nav-item active" id="nav-orders" onclick="switchTab('orders')">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      طلبات
+    </button>
+  </nav>
+
+  <section class="page slide-right" id="page-list-game-oxide">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-game-oxide">عملة 50 | OXIDE</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openGameItem('عملة 50 | OXIDE','ox50',5.3)"><span class="menu-item-icon">🌋</span><div class="menu-item-content"><span class="menu-item-text">عملة 50 | OXIDE</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>5.3 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('عملة 250 | OXIDE','ox250',11.4)"><span class="menu-item-icon">🌋</span><div class="menu-item-content"><span class="menu-item-text">عملة 250 | OXIDE</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>11.4 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-game-pubg">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-game-pubg">شدات عالمية 60</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openGameItem('شدات عالمية 60','pb60',1.6)"><span class="menu-item-icon">🪂</span><div class="menu-item-content"><span class="menu-item-text">شدات عالمية 60</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>1.6 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شدات عالمية 325','pb325',7.7)"><span class="menu-item-icon">🪂</span><div class="menu-item-content"><span class="menu-item-text">شدات عالمية 325</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>7.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شدات عالمية 660','pb660',15.5)"><span class="menu-item-icon">🪂</span><div class="menu-item-content"><span class="menu-item-text">شدات عالمية 660</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>15.5 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شدات عالمية 985','pb985',23.3)"><span class="menu-item-icon">🪂</span><div class="menu-item-content"><span class="menu-item-text">شدات عالمية 985</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>23.3 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-game-genshin">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-game-genshin">بطاقة 5 دولار جينسيس</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openGameItem('بطاقة 5 دولار جينسيس','gen5',9.4)"><span class="menu-item-icon">✨</span><div class="menu-item-content"><span class="menu-item-text">بطاقة 5 دولار جينسيس</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>9.4 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('بطاقة 15 دولار جينسيس','gen15',27.7)"><span class="menu-item-icon">✨</span><div class="menu-item-content"><span class="menu-item-text">بطاقة 15 دولار جينسيس</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>27.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('بطاقة 30 دولار جينسيس','gen30',52.0)"><span class="menu-item-icon">✨</span><div class="menu-item-content"><span class="menu-item-text">بطاقة 30 دولار جينسيس</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>52.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('بطاقة 50 دولار جينسيس','gen50',87.0)"><span class="menu-item-icon">✨</span><div class="menu-item-content"><span class="menu-item-text">بطاقة 50 دولار جينسيس</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>87.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('بطاقة 100 دولار جينسيس','gen100',173.0)"><span class="menu-item-icon">✨</span><div class="menu-item-content"><span class="menu-item-text">بطاقة 100 دولار جينسيس</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>173.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-game-delta">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-game-delta">شحن 18 كوين</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openGameItem('شحن 18 كوين','dt18',0.49)"><span class="menu-item-icon">🎖️</span><div class="menu-item-content"><span class="menu-item-text">شحن 18 كوين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>0.49 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 30 كوين','dt30',0.77)"><span class="menu-item-icon">🎖️</span><div class="menu-item-content"><span class="menu-item-text">شحن 30 كوين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>0.77 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 60 كوين','dt60',1.7)"><span class="menu-item-icon">🎖️</span><div class="menu-item-content"><span class="menu-item-text">شحن 60 كوين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>1.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 320 كوين','dt320',7.8)"><span class="menu-item-icon">🎖️</span><div class="menu-item-content"><span class="menu-item-text">شحن 320 كوين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>7.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 460 كوين','dt460',11.3)"><span class="menu-item-icon">🎖️</span><div class="menu-item-content"><span class="menu-item-text">شحن 460 كوين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>11.3 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-game-cod">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-game-cod">شحن 80 عملة ذهبية</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openGameItem('شحن 80 عملة ذهبية','cod80',1.6)"><span class="menu-item-icon">💀</span><div class="menu-item-content"><span class="menu-item-text">شحن 80 عملة ذهبية</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>1.6 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 420 عملة ذهبية','cod420',5.9)"><span class="menu-item-icon">💀</span><div class="menu-item-content"><span class="menu-item-text">شحن 420 عملة ذهبية</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>5.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 880 عملة ذهبية','cod880',13.9)"><span class="menu-item-icon">💀</span><div class="menu-item-content"><span class="menu-item-text">شحن 880 عملة ذهبية</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>13.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openGameItem('شحن 2400 عملة ذهبية','cod2400',35.0)"><span class="menu-item-icon">💀</span><div class="menu-item-content"><span class="menu-item-text">شحن 2400 عملة ذهبية</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>35.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-game-ludo">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-game-ludo">شحن 830 جوهرة يلا لودو</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openGameItem('شحن 830 جوهرة يلا لودو','ludo830',4.0)"><span class="menu-item-icon">🎲</span><div class="menu-item-content"><span class="menu-item-text">شحن 830 جوهرة يلا لودو</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-itunes">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-itunes">آيتونز 2 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('آيتونز 2 دولار','it2',3.5)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 2 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>3.5 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('آيتونز 3 دولار','it3',4.8)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 3 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('آيتونز 4 دولار','it4',6.8)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 4 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>6.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('آيتونز 5 دولار','it5',7.7)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 5 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>7.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('آيتونز 10 دولار','it10',15.7)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 10 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>15.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('آيتونز 15 دولار','it15',22.6)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 15 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>22.6 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('آيتونز 20 دولار','it20',31.0)"><span class="menu-item-icon">🎵</span><div class="menu-item-content"><span class="menu-item-text">آيتونز 20 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>31.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-nintendo">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-nintendo">نينتندو 10 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('نينتندو 10 دولار','nin10',15.3)"><span class="menu-item-icon">🔴</span><div class="menu-item-content"><span class="menu-item-text">نينتندو 10 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>15.3 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('نينتندو 20 دولار','nin20',21.8)"><span class="menu-item-icon">🔴</span><div class="menu-item-content"><span class="menu-item-text">نينتندو 20 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>21.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('نينتندو 35 دولار','nin35',51.0)"><span class="menu-item-icon">🔴</span><div class="menu-item-content"><span class="menu-item-text">نينتندو 35 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>51.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-blizzard">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-blizzard">بليزارد 20 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('بليزارد 20 دولار','bliz_20_usd',33.0)"><span class="menu-item-icon">❄️</span><div class="menu-item-content"><span class="menu-item-text">بليزارد 20 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>33.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('بليزارد 20 يورو','bliz_20_eur',35.0)"><span class="menu-item-icon">❄️</span><div class="menu-item-content"><span class="menu-item-text">بليزارد 20 يورو</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>35.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-fortnite">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-fortnite">فيبوكس 1000</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('فيبوكس 1000','fort_1000',17.8)"><span class="menu-item-icon">⚡</span><div class="menu-item-content"><span class="menu-item-text">فيبوكس 1000</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>17.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('فيبوكس 2800','fort_2800',40.0)"><span class="menu-item-icon">⚡</span><div class="menu-item-content"><span class="menu-item-text">فيبوكس 2800</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>40.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-playstation">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-playstation">PS شحن 10 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('PS شحن 10 دولار','ps_10_usd',16.8)"><span class="menu-item-icon">💙</span><div class="menu-item-content"><span class="menu-item-text">PS شحن 10 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>16.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('PS شحن 25 دولار','ps_25_usd',38.0)"><span class="menu-item-icon">💙</span><div class="menu-item-content"><span class="menu-item-text">PS شحن 25 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>38.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-valorant">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-valorant">Valorant 5 يورو</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('Valorant 5 يورو','val_5_eur',10.2)"><span class="menu-item-icon">🎯</span><div class="menu-item-content"><span class="menu-item-text">Valorant 5 يورو</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>10.2 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('Valorant 10 يورو','val_10_eur',18.2)"><span class="menu-item-icon">🎯</span><div class="menu-item-content"><span class="menu-item-text">Valorant 10 يورو</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>18.2 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-steam">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-steam">ستيم 5 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('ستيم 5 دولار','st_5',8.2)"><span class="menu-item-icon">💨</span><div class="menu-item-content"><span class="menu-item-text">ستيم 5 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>8.2 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('ستيم 10 دولار','st_10',15.8)"><span class="menu-item-icon">💨</span><div class="menu-item-content"><span class="menu-item-text">ستيم 10 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>15.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openCardItem('ستيم 20 دولار','st_20',31.0)"><span class="menu-item-icon">💨</span><div class="menu-item-content"><span class="menu-item-text">ستيم 20 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>31.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-crunchyroll">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-crunchyroll">كرانشيرول شهر</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('كرانشيرول شهر','cr_1m_sub',15.0)"><span class="menu-item-icon">🟠</span><div class="menu-item-content"><span class="menu-item-text">كرانشيرول شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>15.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-card-roblox">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-card-roblox">روبلوكس 10 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openCardItem('روبلوكس 10 دولار','rob_10_usd',15.3)"><span class="menu-item-icon">🧱</span><div class="menu-item-content"><span class="menu-item-text">روبلوكس 10 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>15.3 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-sub-nitro">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-sub-nitro">نايترو كلاسيك — شهر</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openSubItem('نايترو كلاسيك — شهر','n_classic',19.0)"><span class="menu-item-icon">🔮</span><div class="menu-item-content"><span class="menu-item-text">نايترو كلاسيك — شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>19.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('نايترو قيمنق — شهر','n_boost',39.0)"><span class="menu-item-icon">🔮</span><div class="menu-item-content"><span class="menu-item-text">نايترو قيمنق — شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>39.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-sub-steam_subs">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-sub-steam_subs">لعبة ستيم عشوائية ممتازة</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openSubItem('لعبة ستيم عشوائية ممتازة','st_game',45.0)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">لعبة ستيم عشوائية ممتازة</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>45.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('PES 2021 اوفلاين','game_pes21',6.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">PES 2021 اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>6.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('Black Myth Wukong اوفلاين','game_wukong',6.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">Black Myth Wukong اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>6.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('FC24 اوفلاين','game_fc24',6.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">FC24 اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>6.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('Red Dead Redemption 2 اوفلاين','game_rdr2',4.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">Red Dead Redemption 2 اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('Spider Man Miles Morales اوفلاين','game_spiderman',4.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">Spider Man Miles Morales اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('God of War Ragnarök اوفلاين','game_gow',4.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">God of War Ragnarök اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('GTA 5 اوفلاين','game_gta5',4.9)"><span class="menu-item-icon">🕹️</span><div class="menu-item-content"><span class="menu-item-text">GTA 5 اوفلاين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-sub-tele">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-sub-tele">تليجرام بريميوم 12 شهر</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openSubItem('تليجرام بريميوم 12 شهر','tg12m',54.0)"><span class="menu-item-icon">💎</span><div class="menu-item-content"><span class="menu-item-text">تليجرام بريميوم 12 شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>54.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('تليجرام بريميوم 6 اشهر','tg6m',33.0)"><span class="menu-item-icon">💎</span><div class="menu-item-content"><span class="menu-item-text">تليجرام بريميوم 6 اشهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>33.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('تليجرام بريميوم 3 اشهر','tg3m',23.1)"><span class="menu-item-icon">💎</span><div class="menu-item-content"><span class="menu-item-text">تليجرام بريميوم 3 اشهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>23.1 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-sub-xbox">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-sub-xbox">كيم باس 6 اشهر</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openSubItem('كيم باس 6 اشهر','xbox6m',29.7)"><span class="menu-item-icon">💚</span><div class="menu-item-content"><span class="menu-item-text">كيم باس 6 اشهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>29.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('كيم باس 4 اشهر','xbox4m',19.8)"><span class="menu-item-icon">💚</span><div class="menu-item-content"><span class="menu-item-text">كيم باس 4 اشهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>19.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('كيم باس شهرين','xbox2m',14.8)"><span class="menu-item-icon">💚</span><div class="menu-item-content"><span class="menu-item-text">كيم باس شهرين</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>14.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-sub-psn">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-sub-psn">اكسترا 12 شهر</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openSubItem('اكسترا 12 شهر','ps_ex12m',45.0)"><span class="menu-item-icon">🎮</span><div class="menu-item-content"><span class="menu-item-text">اكسترا 12 شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>45.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('اكسترا 3 اشهر','ps_ex3m',24.7)"><span class="menu-item-icon">🎮</span><div class="menu-item-content"><span class="menu-item-text">اكسترا 3 اشهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>24.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('اكسترا شهر','ps_ex1m',14.8)"><span class="menu-item-icon">🎮</span><div class="menu-item-content"><span class="menu-item-text">اكسترا شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>14.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('عادي 12 شهر','ps_reg12m',39.0)"><span class="menu-item-icon">🎮</span><div class="menu-item-content"><span class="menu-item-text">عادي 12 شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>39.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('عادي 3 اشهر','ps_reg3m',19.8)"><span class="menu-item-icon">🎮</span><div class="menu-item-content"><span class="menu-item-text">عادي 3 اشهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>19.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openSubItem('عادي شهر','ps_reg1m',9.9)"><span class="menu-item-icon">🎮</span><div class="menu-item-content"><span class="menu-item-text">عادي شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>9.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-sub-netflix">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-sub-netflix">اشتراك نتفلكس شهر</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openSubItem('اشتراك نتفلكس شهر','nf_1m',0.99)"><span class="menu-item-icon">🍿</span><div class="menu-item-content"><span class="menu-item-text">اشتراك نتفلكس شهر</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>0.99 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-phone-iraq">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-phone-iraq">كارت كورك 10 دولار</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openPhoneItem('كارت كورك 10 دولار','korek_10',11.9)"><span class="menu-item-icon">🇮🇶</span><div class="menu-item-content"><span class="menu-item-text">كارت كورك 10 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>11.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('كارت كورك 5 دولار','korek_5',6.1)"><span class="menu-item-icon">🇮🇶</span><div class="menu-item-content"><span class="menu-item-text">كارت كورك 5 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>6.1 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('كارت كورك 3 دولار','korek_3',4.0)"><span class="menu-item-icon">🇮🇶</span><div class="menu-item-content"><span class="menu-item-text">كارت كورك 3 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('كارت كورك 2 دولار','korek_2',3.0)"><span class="menu-item-icon">🇮🇶</span><div class="menu-item-content"><span class="menu-item-text">كارت كورك 2 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>3.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('كارت كورك 1 دولار','korek_1',1.7)"><span class="menu-item-icon">🇮🇶</span><div class="menu-item-content"><span class="menu-item-text">كارت كورك 1 دولار</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>1.7 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-phone-saudi">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-phone-saudi">STC ريال 20</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openPhoneItem('STC ريال 20','stc_20',9.9)"><span class="menu-item-icon">🇸🇦</span><div class="menu-item-content"><span class="menu-item-text">STC ريال 20</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>9.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('Virgin ريال 20','virgin_20',9.1)"><span class="menu-item-icon">🇸🇦</span><div class="menu-item-content"><span class="menu-item-text">Virgin ريال 20</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>9.1 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('Zain ريال 34.5','zain_34_5',17.3)"><span class="menu-item-icon">🇸🇦</span><div class="menu-item-content"><span class="menu-item-text">Zain ريال 34.5</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>17.3 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('Mobily ريال 25','mobily_25',11.9)"><span class="menu-item-icon">🇸🇦</span><div class="menu-item-content"><span class="menu-item-text">Mobily ريال 25</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>11.9 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-phone-jordan">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-phone-jordan">Orange دينار 5</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openPhoneItem('Orange دينار 5','orange_5',20.8)"><span class="menu-item-icon">🇯🇴</span><div class="menu-item-content"><span class="menu-item-text">Orange دينار 5</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>20.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-phone-lebanon">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-phone-lebanon">Alfa دولار 4.5</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openPhoneItem('Alfa دولار 4.5','alfa_4_5',9.4)"><span class="menu-item-icon">🇱🇧</span><div class="menu-item-content"><span class="menu-item-text">Alfa دولار 4.5</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>9.4 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-phone-egypt">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-phone-egypt">Vodafone جنيه 100</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openPhoneItem('Vodafone جنيه 100','vodafone_100',4.5)"><span class="menu-item-icon">🇪🇬</span><div class="menu-item-content"><span class="menu-item-text">Vodafone جنيه 100</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.5 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      <button class="menu-item" onclick="openPhoneItem('Etisalat جنيه 100','etisalat_100',4.0)"><span class="menu-item-icon">🇪🇬</span><div class="menu-item-content"><span class="menu-item-text">Etisalat جنيه 100</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>4.0 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-list-phone-bahrain">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-phone-bahrain">Batelco دينار 4</h2></div></div></header>
+    <div class="page-content">
+      <button class="menu-item" onclick="openPhoneItem('Batelco دينار 4','batelco_4',18.8)"><span class="menu-item-icon">🇧🇭</span><div class="menu-item-content"><span class="menu-item-text">Batelco دينار 4</span><span class="price-badge"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>18.8 د.ع</span></div><span class="menu-item-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-form-game-item">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="games"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-form-game">الخدمة</h2></div></div></header>
+    <div class="page-content">
+      <div class="form-section">
+        <input type="hidden" id="game-item-value" /><input type="hidden" id="game-item-rate" />
+        <div><p class="form-label">الخدمة المختارة</p><p id="game-item-name" style="font-size:14px;font-weight:600;color:var(--text-h);padding:10px 14px;background:var(--bg);border-radius:var(--r-sm);">—</p></div>
+        <div><p class="form-label">معرف اللاعب ID</p><input class="form-input" id="game-item-link" type="text" placeholder="أدخل الـ ID الخاص بك في اللعبة" /></div>
+        
+        <div class="price-preview hidden" id="game-item-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>د.ع</span> <span id="game-item-calc">0.00</span></span></div>
+        <p class="balance-warn" id="game-item-warn">⚠️ رصيدك غير كافٍ</p>
+        <button class="btn-confirm" id="game-item-order-btn">تأكيد الطلب</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-form-card-item">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="cards"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-form-card">الخدمة</h2></div></div></header>
+    <div class="page-content">
+      <div class="form-section">
+        <input type="hidden" id="card-item-value" /><input type="hidden" id="card-item-rate" />
+        <div><p class="form-label">الخدمة المختارة</p><p id="card-item-name" style="font-size:14px;font-weight:600;color:var(--text-h);padding:10px 14px;background:var(--bg);border-radius:var(--r-sm);">—</p></div>
+        <div><p class="form-label">ملاحظة</p><input class="form-input" id="card-item-link" type="text" placeholder="أدخل أي ملاحظة إن وجدت" /></div>
+        
+        <div class="price-preview hidden" id="card-item-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>د.ع</span> <span id="card-item-calc">0.00</span></span></div>
+        <p class="balance-warn" id="card-item-warn">⚠️ رصيدك غير كافٍ</p>
+        <button class="btn-confirm" id="card-item-order-btn">تأكيد الشراء</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-form-sub-item">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="subscriptions"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-form-sub">الخدمة</h2></div></div></header>
+    <div class="page-content">
+      <div class="form-section">
+        <input type="hidden" id="sub-item-value" /><input type="hidden" id="sub-item-rate" />
+        <div><p class="form-label">الخدمة المختارة</p><p id="sub-item-name" style="font-size:14px;font-weight:600;color:var(--text-h);padding:10px 14px;background:var(--bg);border-radius:var(--r-sm);">—</p></div>
+        <div><p class="form-label">الحساب</p><input class="form-input" id="sub-item-link" type="text" placeholder="أدخل البريد الإلكتروني أو اسم المستخدم" /></div>
+        
+        <div class="price-preview hidden" id="sub-item-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>د.ع</span> <span id="sub-item-calc">0.00</span></span></div>
+        <p class="balance-warn" id="sub-item-warn">⚠️ رصيدك غير كافٍ</p>
+        <button class="btn-confirm" id="sub-item-order-btn">تأكيد الاشتراك</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page slide-right" id="page-form-phone-item">
+    <header class="page-header"><div class="subpage-top-bar"><button class="btn-back" data-back="topup"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button><div class="subpage-title-wrap"><h2 class="subpage-title" id="title-form-phone">الخدمة</h2></div></div></header>
+    <div class="page-content">
+      <div class="form-section">
+        <input type="hidden" id="phone-item-value" /><input type="hidden" id="phone-item-rate" />
+        <div><p class="form-label">الخدمة المختارة</p><p id="phone-item-name" style="font-size:14px;font-weight:600;color:var(--text-h);padding:10px 14px;background:var(--bg);border-radius:var(--r-sm);">—</p></div>
+        <div><p class="form-label">رقم الهاتف (مع رمز الدولة)</p><input class="form-input" id="phone-item-link" type="text" placeholder="مثال: 00964..." /></div>
+        
+        <div class="price-preview hidden" id="phone-item-price-preview"><span class="price-label">السعر الإجمالي</span><span class="price-value"><span>د.ع</span> <span id="phone-item-calc">0.00</span></span></div>
+        <p class="balance-warn" id="phone-item-warn">⚠️ رصيدك غير كافٍ</p>
+        <button class="btn-confirm" id="phone-item-order-btn">تأكيد شحن الخط</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end .app -->
 
 <!-- MODAL ADD BALANCE -->
-<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-handle"></div><h2 class="modal-title">إضافة رصيد محفظة</h2><div class="modal-input-wrap"><input class="modal-input" id="modal-amount" type="number" placeholder="0.00" /><span class="modal-input-suffix">ر.س</span></div><button class="btn-confirm" id="btn-confirm-balance">تأكيد التعبئة</button></div></div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-handle"></div><h2 class="modal-title">إضافة رصيد محفظة</h2><div class="modal-input-wrap"><input class="modal-input" id="modal-amount" type="number" placeholder="0.00" /><span class="modal-input-suffix">د.ع</span></div><button class="btn-confirm" id="btn-confirm-balance">تأكيد التعبئة</button></div></div>
 <div class="toast" id="toast"></div>
 
 <!-- SETTINGS MODAL -->
@@ -466,7 +945,7 @@
       <p>اجمالي عدد طلباتك</p>
     </div>
     <div class="stats-card">
-      <h2 id="totalSpentAmount">0.00 ر.س</h2>
+      <h2 id="totalSpentAmount">0.00 د.ع</h2>
       <p>صرفت معنا</p>
     </div>
   </div>
@@ -476,8 +955,10 @@
 // ── الرصيد ──────────────────────────────────────────────
 let balance = 5.00;
 function updateBalanceUI() {
-  const el = document.getElementById('balance-display');
-  if (el) el.textContent = balance.toFixed(2);
+  const val = balance.toFixed(2);
+  ['balance-display','balance-display-orders','balance-display-menu'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = val;
+  });
 }
 
 // ── API ─────────────────────────────────────────────────
@@ -540,70 +1021,27 @@ function navigate(to) {
   const fromEl = document.getElementById('page-' + fromId);
   const toEl   = document.getElementById('page-' + to);
   if (!toEl) return;
-  if (fromEl) { fromEl.classList.remove('active'); fromEl.classList.add('slide-left'); }
-  toEl.classList.remove('slide-right', 'slide-left'); toEl.classList.add('active');
-  history_stack.push(to);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Check if going back (to is in stack) or forward
+  const isBack = history_stack.includes(to);
+  if (fromEl) {
+    fromEl.classList.remove('active');
+    fromEl.classList.add(isBack ? 'slide-left' : 'slide-right');
+  }
+  toEl.classList.remove('slide-right', 'slide-left');
+  toEl.classList.add('active');
+  toEl.scrollTop = 0;
+  if (isBack) {
+    history_stack = history_stack.slice(0, history_stack.lastIndexOf(to) + 1);
+  } else {
+    history_stack.push(to);
+  }
 }
 
 // ── ربط data-nav / data-back ─────────────────────────────
 document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', function () { navigate(this.dataset.nav); }));
 document.querySelectorAll('[data-back]').forEach(btn => btn.addEventListener('click', function () { navigate(this.dataset.back); }));
 
-// ── فتح نماذج الأقسام ────────────────────────────────────
-function openSubForm(title, key) {
-  document.getElementById('dynamic-sub-title').textContent = title;
-  const select = document.getElementById('sub-service-select');
-  select.innerHTML = '<option value="">— اختر نوع الاشتراك —</option>';
-  (subsDatabase[key] || []).forEach(opt => {
-    const el = document.createElement('option'); el.value = opt.value;
-    el.dataset.fixed = opt.price; el.textContent = `${opt.label} — ${opt.price} ر.س`;
-    select.appendChild(el);
-  });
-  document.getElementById('sub-email-input').value = '';
-  document.getElementById('sub-price-preview').classList.add('hidden');
-  navigate('form-subs-dynamic');
-}
-
-function openPhoneForm(title, key) {
-  document.getElementById('dynamic-phone-title').textContent = title;
-  const select = document.getElementById('phone-service-select');
-  select.innerHTML = '<option value="">— اختر فئة رصيد الشحن —</option>';
-  (phonesDatabase[key] || []).forEach(opt => {
-    const el = document.createElement('option'); el.value = opt.value;
-    el.dataset.fixed = opt.price; el.textContent = `${opt.label} — ${opt.price} ر.س`;
-    select.appendChild(el);
-  });
-  document.getElementById('phone-number-input').value = '';
-  document.getElementById('phone-price-preview').classList.add('hidden');
-  navigate('form-phone-dynamic');
-}
-
-function openGameForm(title, key) {
-  document.getElementById('dynamic-game-title').textContent = title;
-  const s = document.getElementById('game-service-select');
-  s.innerHTML = '<option value="">— باقات وعروض اللعبة —</option>';
-  (gamesDatabase[key] || []).forEach(o => {
-    const e = document.createElement('option'); e.value = o.value;
-    e.dataset.fixed = o.price; e.textContent = `${o.label} - ${o.price} ر.س`;
-    s.appendChild(e);
-  });
-  document.getElementById('game-price-preview').classList.add('hidden');
-  navigate('form-games-dynamic');
-}
-
-function openCardForm(title, key) {
-  document.getElementById('dynamic-card-title').textContent = title;
-  const s = document.getElementById('card-service-select');
-  s.innerHTML = '<option value="">— فئات الكرت المتوفرة —</option>';
-  (cardsDatabase[key] || []).forEach(o => {
-    const e = document.createElement('option'); e.value = o.value;
-    e.dataset.fixed = o.price; e.textContent = `${o.label} — ${o.price} ر.س`;
-    s.appendChild(e);
-  });
-  document.getElementById('card-price-preview').classList.add('hidden');
-  navigate('form-cards-dynamic');
-}
+// الدوال الجديدة مضافة في الأسفل
 
 // ── حساب السعر ───────────────────────────────────────────
 function fmt(n) { return n.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -633,15 +1071,437 @@ document.querySelectorAll('.form-section').forEach(form => {
   const qty = form.querySelector('.qty-input');   if (qty) qty.addEventListener('input',  () => calcPrice(form));
 });
 
-// ── انستا وايت badge ─────────────────────────────────────
-const instaSelect    = document.getElementById('insta-white-select');
-const instaBadgeWrap = document.getElementById('insta-cart-badge-wrap');
-const instaBadgeRate = document.getElementById('insta-badge-rate');
-if (instaSelect) {
-  instaSelect.addEventListener('change', function () {
-    const opt = this.options[this.selectedIndex];
-    if (opt && opt.value) { instaBadgeRate.textContent = opt.dataset.rate; instaBadgeWrap.style.display = 'inline-block'; }
-    else instaBadgeWrap.style.display = 'none';
+// ── تليجرام وايت — فتح صفحة الخدمة ─────────────────────
+function openTeleService(label, value, rate) {
+  document.getElementById('tele-service-title').textContent = label.split('(')[0].trim().substring(0,20);
+  document.getElementById('tele-service-name-display').textContent = label;
+  document.getElementById('tele-service-value').value = value;
+  document.getElementById('tele-service-rate').value = rate;
+  document.getElementById('tele-svc-link').value = '';
+  document.getElementById('tele-svc-qty').value = 1000;
+  document.getElementById('tele-svc-price-preview').classList.add('hidden');
+  document.getElementById('tele-svc-balance-warn').classList.remove('show');
+  navigate('form-tele-service');
+}
+
+const teleQtyInput = document.getElementById('tele-svc-qty');
+if (teleQtyInput) {
+  teleQtyInput.addEventListener('input', function() {
+    const rate  = parseFloat(document.getElementById('tele-service-rate').value) || 0;
+    const qty   = parseInt(this.value) || 0;
+    const total = rate * qty / 1000;
+    if (total > 0) {
+      document.getElementById('tele-svc-calc-price').textContent = fmt(total);
+      document.getElementById('tele-svc-price-preview').classList.remove('hidden');
+      if (total > balance) document.getElementById('tele-svc-balance-warn').classList.add('show');
+      else document.getElementById('tele-svc-balance-warn').classList.remove('show');
+    } else {
+      document.getElementById('tele-svc-price-preview').classList.add('hidden');
+    }
+  });
+}
+
+const teleOrderBtn = document.getElementById('tele-svc-order-btn');
+if (teleOrderBtn) {
+  teleOrderBtn.addEventListener('click', async function() {
+    const serviceId = document.getElementById('tele-service-value').value;
+    const rate      = parseFloat(document.getElementById('tele-service-rate').value) || 0;
+    const link      = document.getElementById('tele-svc-link').value.trim();
+    const qty       = parseInt(document.getElementById('tele-svc-qty').value) || 0;
+    const total     = rate * qty / 1000;
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إدخال رابط القناة', 'error'); return; }
+    if (total <= 0 || total > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب وإرساله للسيرفر...', 'success');
+    try {
+      const response = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: qty })
+      });
+      const result = await response.json();
+      if (result.order) {
+        balance -= total; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI();
+        showToast(`✅ تم تنفيذ طلبك بنجاح! رقم الطلب: ${result.order}`, 'success');
+        alert(`✅ تم إرسال طلبك بنجاح!\nرقم الطلب: ${result.order}`);
+        setTimeout(() => { navigate('main'); }, 1500);
+      } else {
+        showToast(`❌ فشل السيرفر: ${result.error || 'خطأ غير معروف'}`, 'error');
+      }
+    } catch(err) {
+      balance -= total; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك بنجاح', 'success');
+      setTimeout(() => { navigate('main'); }, 1200);
+    } finally {
+      this.disabled = false; this.textContent = 'إرسال الطلب فوراً';
+    }
+  });
+}
+
+
+function openInstaService(label, value, rate) {
+  document.getElementById('insta-service-title').textContent = label.split('|')[0].trim();
+  document.getElementById('insta-service-name-display').textContent = label;
+  document.getElementById('insta-service-value').value = value;
+  document.getElementById('insta-service-rate').value = rate;
+  document.getElementById('insta-svc-link').value = '';
+  document.getElementById('insta-svc-qty').value = 1000;
+  document.getElementById('insta-svc-price-preview').classList.add('hidden');
+  document.getElementById('insta-svc-balance-warn').classList.remove('show');
+  navigate('form-insta-service');
+}
+
+// ── انستا وايت — حساب السعر تلقائي ──────────────────────
+const instaQtyInput = document.getElementById('insta-svc-qty');
+if (instaQtyInput) {
+  instaQtyInput.addEventListener('input', function() {
+    const rate = parseFloat(document.getElementById('insta-service-rate').value) || 0;
+    const qty  = parseInt(this.value) || 0;
+    const total = rate * qty / 1000;
+    if (total > 0) {
+      document.getElementById('insta-svc-calc-price').textContent = fmt(total);
+      document.getElementById('insta-svc-price-preview').classList.remove('hidden');
+      if (total > balance) document.getElementById('insta-svc-balance-warn').classList.add('show');
+      else document.getElementById('insta-svc-balance-warn').classList.remove('show');
+    } else {
+      document.getElementById('insta-svc-price-preview').classList.add('hidden');
+    }
+  });
+}
+
+// ── انستا وايت — إرسال الطلب ─────────────────────────────
+const instaOrderBtn = document.getElementById('insta-svc-order-btn');
+if (instaOrderBtn) {
+  instaOrderBtn.addEventListener('click', async function() {
+    const serviceId = document.getElementById('insta-service-value').value;
+    const rate      = parseFloat(document.getElementById('insta-service-rate').value) || 0;
+    const link      = document.getElementById('insta-svc-link').value.trim();
+    const qty       = parseInt(document.getElementById('insta-svc-qty').value) || 0;
+    const total     = rate * qty / 1000;
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إدخال رابط الحساب', 'error'); return; }
+    if (total <= 0 || total > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب وإرساله للسيرفر...', 'success');
+    try {
+      const response = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: qty })
+      });
+      const result = await response.json();
+      if (result.order) {
+        balance -= total; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI();
+        showToast(`✅ تم تنفيذ طلبك بنجاح! رقم الطلب: ${result.order}`, 'success');
+        alert(`✅ تم إرسال طلبك بنجاح!\nرقم الطلب: ${result.order}`);
+        setTimeout(() => { navigate('main'); }, 1500);
+      } else {
+        showToast(`❌ فشل السيرفر: ${result.error || 'خطأ غير معروف'}`, 'error');
+      }
+    } catch(err) {
+      balance -= total; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك بنجاح', 'success');
+      setTimeout(() => { navigate('main'); }, 1200);
+    } finally {
+      this.disabled = false; this.textContent = 'إرسال الطلب فوراً';
+    }
   });
 }
 
@@ -674,7 +1534,81 @@ document.querySelectorAll('.order-btn').forEach(btn => {
       });
       const result   = await response.json();
       if (result.order) {
-        balance -= total; updateBalanceUI();
+        balance -= total; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI();
         showToast(`✅ تم تنفيذ طلبك بنجاح! رقم الطلب: ${result.order}`, 'success');
         alert(`✅ تم إرسال طلبك بنجاح!\nرقم الطلب: ${result.order}`);
         setTimeout(() => { navigate('main'); }, 1500);
@@ -685,7 +1619,81 @@ document.querySelectorAll('.order-btn').forEach(btn => {
     } catch (err) {
       console.error(err);
       // في حال فشل الاتصال نسجل الطلب محلياً
-      balance -= total; updateBalanceUI();
+      balance -= total; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI();
       showToast('✅ تم تسجيل طلبك بنجاح', 'success');
       setTimeout(() => { navigate('main'); }, 1200);
     } finally {
@@ -701,7 +1709,81 @@ document.getElementById('btn-add-balance').addEventListener('click', () => { amo
 overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
 document.getElementById('btn-confirm-balance').addEventListener('click', () => {
   const val = parseFloat(amountInput.value); if (isNaN(val) || val <= 0) return;
-  balance += val; updateBalanceUI(); overlay.classList.remove('open'); showToast('✅ تم شحن المحفظة بنجاح', 'success');
+  balance += val; 
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+updateBalanceUI(); overlay.classList.remove('open'); showToast('✅ تم شحن المحفظة بنجاح', 'success');
 });
 
 // ── الإعدادات ─────────────────────────────────────────────
@@ -710,17 +1792,231 @@ function closeSettingsModal() { document.getElementById('settingsModal').style.d
 function copyUserId() { navigator.clipboard.writeText(document.getElementById('userIdField').value); showToast('✅ تم نسخ المعرف', 'success'); }
 function copyToken()  { navigator.clipboard.writeText(document.getElementById('tokenField').value);  showToast('✅ تم نسخ الرمز', 'success'); }
 
-// ── معرف المستخدم ─────────────────────────────────────────
-(function initUserId() {
-  let uid = localStorage.getItem('wf_user_id');
-  if (!uid) {
-    const rand = Math.floor(100000 + Math.random() * 900000);
-    uid = 'google' + rand + '_' + Math.random().toString(36).substr(2, 4);
-    localStorage.setItem('wf_user_id', uid);
-  }
+// ── نظام المصادقة والمعرف الفريد ──────────────────────────
+
+// توليد معرف فريد من البيانات (hash بسيط)
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('').substr(0,12);
+}
+
+function getDeviceFingerprint() {
+  return navigator.userAgent + screen.width + screen.height + navigator.language + Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+async function generateUniqueId(seed) {
+  const hash = await hashStr(seed);
+  return 'WF-' + hash.toUpperCase();
+}
+
+async function finalizeLogin(provider, identifier) {
+  // المعرف = hash من (provider + identifier + device) — فريد لكل شخص
+  const seed = provider + ':' + identifier + ':' + getDeviceFingerprint();
+  const uid  = await generateUniqueId(seed);
+
+  localStorage.setItem('wf_user_id',    uid);
+  localStorage.setItem('wf_provider',   provider);
+  localStorage.setItem('wf_identifier', identifier);
+  localStorage.setItem('wf_logged_in',  '1');
+
   const el = document.getElementById('userIdField');
   if (el) el.value = uid;
-})();
+
+  document.getElementById('bottom-nav').classList.remove('hidden');
+  switchTab('main');
+  document.getElementById('nav-main').classList.add('active');
+  document.getElementById('nav-orders').classList.remove('active');
+  showToast('✅ مرحباً! تم الدخول بنجاح', 'success');
+}
+
+function loginWithTelegram() {
+  // في بيئة حقيقية يوجه لـ Telegram OAuth — هنا نحاكي بـ prompt
+  const username = prompt('أدخل يوزر تلكرام (بدون @):');
+  if (!username || !username.trim()) return;
+  finalizeLogin('telegram', username.trim().toLowerCase());
+}
+
+// ── فك تشفير JWT من جوجل (بدون مكتبة خارجية) ──────────
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+  } catch { return null; }
+}
+
+// ── Callback من Google Sign-In ────────────────────────────
+function handleGoogleLogin(response) {
+  const payload = parseJwt(response.credential);
+  if (!payload || !payload.email) {
+    showToast('فشل التسجيل عبر جوجل', 'error'); return;
+  }
+  // المعرف الفريد = hash من email الجوجل (ثابت لكل حساب)
+  finalizeLogin('google', payload.email.toLowerCase());
+}
+
+function loginWithGoogle() {
+  if (typeof google === 'undefined') {
+    showToast('تحقق من الاتصال بالإنترنت', 'error'); return;
+  }
+  google.accounts.id.initialize({
+    client_id: '316214794759-jqbd46lca0kpdeug8mvt71vasv9s74bj.apps.googleusercontent.com',
+    callback: handleGoogleLogin,
+    auto_select: false
+  });
+  google.accounts.id.prompt();
+}
+
+function loginWithEmail() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value.trim();
+  if (!email) { showToast('أدخل البريد الإلكتروني', 'error'); return; }
+  if (!pass)  { showToast('أدخل كلمة المرور', 'error'); return; }
+  finalizeLogin('email', email.toLowerCase());
+}
+
+// ── تهيئة عند التحميل ────────────────────────────────────
+(async function initAuth() {
+  const loggedIn = localStorage.getItem('wf_logged_in');
+  const uid      = localStorage.getItem('wf_user_id');
+
+  if (loggedIn && uid) {
+    // مسجل مسبقاً — اذهب للرئيسية مباشرة
+    const el = document.getElementById('userIdField');
+    if (el) el.value = uid;
+    // انتقل للرئيسية بدون animation
+    document.getElementById('page-login').classList.remove('active');
+    document.getElementById('page-login').classList.add('slide-left');
+    document.getElementById('page-main').classList.remove('slide-right');
+    document.getElementById('page-main').classList.add('active');
+    history_stack = ['main'];
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    document.getElementById('nav-main').classList.add('active');
+    document.getElementById('nav-orders').classList.remove('active');
+  }
+})()
+
+
+// ── فتح قائمة خدمة محددة (ألعاب/بطائق/اشتراكات/هاتف) ──
+const _gameKeys  = ['oxide', 'pubg', 'genshin', 'delta', 'cod', 'ludo'];
+const _cardKeys  = ['itunes', 'nintendo', 'blizzard', 'fortnite', 'playstation', 'valorant', 'steam', 'crunchyroll', 'roblox'];
+const _subKeys   = ['nitro', 'steam_subs', 'tele', 'xbox', 'psn', 'netflix'];
+const _phoneKeys = ['iraq', 'saudi', 'jordan', 'lebanon', 'egypt', 'bahrain'];
+
+function openGameForm(title, key)  { navigate('list-game-' + key); }
+function openCardForm(title, key)  { navigate('list-card-' + key); }
+function openSubForm(title, key)   { navigate('list-sub-' + key); }
+function openPhoneForm(title, key) { navigate('list-phone-' + key); }
+
+function _openItem(label, value, rate, titleId, nameId, valId, rateId, linkId, priceId, warnId, pageId) {
+  document.getElementById(titleId).textContent = label.length > 22 ? label.substring(0,22)+'…' : label;
+  document.getElementById(nameId).textContent  = label;
+  document.getElementById(valId).value  = value;
+  document.getElementById(rateId).value = rate;
+  document.getElementById(linkId).value = '';
+  document.getElementById(priceId).classList.add('hidden');
+  document.getElementById(warnId).classList.remove('show');
+  navigate(pageId);
+}
+
+function openGameItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-game','game-item-name','game-item-value','game-item-rate','game-item-link','game-item-price-preview','game-item-warn','form-game-item');
+}
+function openCardItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-card','card-item-name','card-item-value','card-item-rate','card-item-link','card-item-price-preview','card-item-warn','form-card-item');
+}
+function openSubItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-sub','sub-item-name','sub-item-value','sub-item-rate','sub-item-link','sub-item-price-preview','sub-item-warn','form-sub-item');
+}
+function openPhoneItem(label, value, rate) {
+  _openItem(label,value,rate,'title-form-phone','phone-item-name','phone-item-value','phone-item-rate','phone-item-link','phone-item-price-preview','phone-item-warn','form-phone-item');
+}
+
+// ── أزرار الطلب للأقسام الجديدة ──────────────────────────
+['game-item','card-item','sub-item','phone-item'].forEach(prefix => {
+  const btn = document.getElementById(prefix + '-order-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async function() {
+    const serviceId = document.getElementById(prefix + '-value').value;
+    const rate      = parseFloat(document.getElementById(prefix + '-rate').value) || 0;
+    const link      = document.getElementById(prefix + '-link').value.trim();
+    if (!serviceId) { showToast('يرجى اختيار الخدمة أولاً', 'error'); return; }
+    if (!link)      { showToast('يرجى إملاء الحقل المطلوب', 'error'); return; }
+    if (rate > balance) { showToast('تحقق من رصيد المحفظة', 'error'); return; }
+    this.disabled = true; this.textContent = '⏳ جاري الإرسال...';
+    showToast('⏳ جاري معالجة الطلب...', 'success');
+    try {
+      const res = await fetch(`${SERVER_URL}/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceId, link, quantity: 1 })
+      });
+      const result = await res.json();
+      if (result.order) {
+        balance -= rate; updateBalanceUI();
+        showToast('✅ تم تنفيذ طلبك! رقم: ' + result.order, 'success');
+        alert('✅ تم الطلب بنجاح!\nرقم الطلب: ' + result.order);
+        setTimeout(() => navigate('main'), 1500);
+      } else {
+        showToast('❌ ' + (result.error || 'خطأ'), 'error');
+      }
+    } catch(e) {
+      balance -= rate; updateBalanceUI();
+      showToast('✅ تم تسجيل طلبك', 'success');
+      setTimeout(() => navigate('main'), 1200);
+    } finally {
+      this.disabled = false;
+      this.textContent = this.dataset.label || 'تأكيد';
+    }
+  });
+});
+
+// ── Bottom Nav ────────────────────────────────────────────
+function switchTab(tab) {
+  // update nav active state
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + tab).classList.add('active');
+  navigate(tab);
+  syncAllBalances();
+}
+
+function syncAllBalances() {
+  const val = document.getElementById('balance-display').textContent;
+  const ord = document.getElementById('balance-display-orders');
+  const men = document.getElementById('balance-display-menu');
+  if (ord) ord.textContent = val;
+  if (men) men.textContent = val;
+}
+
+// ── Orders ────────────────────────────────────────────────
+let allOrders = JSON.parse(localStorage.getItem('wf_orders') || '[]');
+
+function saveOrder(name, qty, status) {
+  allOrders.unshift({ name, qty, status, icon: '🛒', id: Date.now() });
+  localStorage.setItem('wf_orders', JSON.stringify(allOrders));
+  renderOrders('all');
+}
+
+function renderOrders(filter) {
+  const list = document.getElementById('orders-list');
+  if (!list) return;
+  const filtered = filter === 'all' ? allOrders : allOrders.filter(o => o.status === filter);
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:14px;">لا توجد طلبات</p>';
+    return;
+  }
+  const statusMap = { complete: { label: 'مكتمل', cls: 'complete' }, active: { label: 'نشيط', cls: 'active' }, partial: { label: 'جزئي', cls: 'active' }, pending: { label: 'قيد الانتظار', cls: 'pending' }, cancelled: { label: 'ألغيت', cls: 'cancelled' } };
+  list.innerHTML = filtered.map(o => {
+    const s = statusMap[o.status] || { label: o.status, cls: 'pending' };
+    return `<div class="order-card"><div class="order-icon">${o.icon||'🛒'}</div><div class="order-info"><p class="order-name">${o.name}</p><p class="order-qty">${o.qty} <span class="order-status ${s.cls}">• ${s.label}</span></p></div><div class="order-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></div></div>`;
+  }).join('');
+}
+
+function filterOrders(type, btn) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders(type);
+}
+
+// init orders on load
+renderOrders('all');
 
 updateBalanceUI();
 </script>
