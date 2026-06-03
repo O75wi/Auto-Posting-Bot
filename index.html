@@ -210,7 +210,7 @@
     #settingsBtn { display: none; }
 
     /* ── Login Page ── */
-    #page-login, #page-register, #page-verify-reg, #page-forgot, #page-verify-forgot { background: #0A0A0A; justify-content: center; align-items: center; }
+    #page-login, #page-register, #page-verify-reg, #page-forgot, #page-verify-forgot { background: #0A0A0A; justify-content: center; align-items: center; z-index: 2 !important; }
     .login-wrap { width: 100%; padding: 40px 28px; display: flex; flex-direction: column; align-items: center; gap: 0; }
     .login-logo { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.03em; margin-bottom: 6px; }
     .login-sub  { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 40px; }
@@ -1886,25 +1886,44 @@ updateBalanceUI(); overlay.classList.remove('open'); showToast('✅ تم شحن 
 
 // ── الإعدادات ─────────────────────────────────────────────
 function openSettingsModal() {
-  // تحديث البريد والمعرف
-  const email = localStorage.getItem('wf_identifier') || '';
-  const uid   = localStorage.getItem('wf_user_id') || '';
+  const email    = localStorage.getItem('wf_identifier') || '';
+  const uid      = localStorage.getItem('wf_user_id') || '';
+  const apiToken = localStorage.getItem('wf_api_token') || '';
+
   const emailEl = document.getElementById('settings-email-field');
-  if (emailEl && email) emailEl.value = email;
+  if (emailEl) emailEl.value = email;
   const uidEl = document.getElementById('userIdField');
-  if (uidEl && uid) uidEl.value = uid;
-  // تحديث الإحصائيات
-  const orders = JSON.parse(localStorage.getItem('wf_orders') || '[]');
-  const spent  = orders.reduce((s, o) => s + (o.cost || 0), 0);
+  if (uidEl) uidEl.value = uid;
+  const tf = document.getElementById('tokenField');
+  if (tf) tf.value = apiToken;
+
+  // إحصائيات الطلبات الخاصة بهذا المستخدم
+  const allO = JSON.parse(localStorage.getItem('wf_orders') || '[]');
+  const myOrders = allO.filter(o => !o.userId || o.userId === uid);
+  const spent = myOrders.reduce((s, o) => s + (o.cost || 0), 0);
   const tc = document.getElementById('totalOrdersCount');
   const ts = document.getElementById('totalSpentAmount');
-  if (tc) tc.textContent = orders.length;
+  if (tc) tc.textContent = myOrders.length;
   if (ts) ts.textContent = '$' + spent.toFixed(2);
+
   document.getElementById('settingsModal').style.display = 'flex';
 }
 function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
-function copyUserId() { navigator.clipboard.writeText(document.getElementById('userIdField').value); showToast('✅ تم نسخ المعرف', 'success'); }
-function copyToken()  { navigator.clipboard.writeText(document.getElementById('tokenField').value);  showToast('✅ تم نسخ الرمز', 'success'); }
+function copyToClipboard(text, msg) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => showToast(msg, 'success')).catch(() => fallbackCopy(text, msg));
+  } else { fallbackCopy(text, msg); }
+}
+function fallbackCopy(text, msg) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); showToast(msg, 'success'); }
+  catch(e) { showToast('❌ فشل النسخ، انسخ يدوياً', 'error'); }
+  document.body.removeChild(ta);
+}
+function copyUserId() { copyToClipboard(document.getElementById('userIdField').value, '✅ تم نسخ المعرف'); }
+function copyToken()  { copyToClipboard(document.getElementById('tokenField').value,  '✅ تم نسخ الرمز'); }
 
 function switchSettingsTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1947,23 +1966,41 @@ function confirmEmail() {
   showToast('📧 تم إرسال رابط التأكيد لبريدك', 'success');
 }
 
-function regenerateToken() {
-  const newToken = 'WF-' + Math.random().toString(36).slice(2).toUpperCase() + Math.random().toString(36).slice(2).toUpperCase();
+async function regenerateToken() {
+  const identifier = localStorage.getItem('wf_identifier') || '';
+  const tokenSeed  = 'api:' + identifier + ':' + Date.now() + ':' + Math.random();
+  const tokenHash  = await hashStr(tokenSeed);
+  const newToken   = tokenHash.toUpperCase() + Math.random().toString(36).slice(2).toUpperCase();
   const tf = document.getElementById('tokenField');
   if (tf) tf.value = newToken;
-  localStorage.setItem('wf_token', newToken);
+  localStorage.setItem('wf_api_token', newToken);
+  // احفظ في سجل المستخدم أيضاً
+  const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
+  if (identifier && users[identifier]) {
+    users[identifier].apiToken = newToken;
+    localStorage.setItem('wf_users', JSON.stringify(users));
+  }
   showToast('✅ تم تجديد الرمز المميز', 'success');
 }
 
 function doLogout() {
-  if (!confirm('هل تريد تسجيل الخروج؟')) return;
   localStorage.removeItem('wf_logged_in');
   localStorage.removeItem('wf_user_id');
+  localStorage.removeItem('wf_api_token');
   localStorage.removeItem('wf_provider');
   localStorage.removeItem('wf_identifier');
   closeSettingsModal();
+  // إعادة تعيين الحالة
+  history_stack = ['login'];
   document.getElementById('bottom-nav').classList.add('hidden');
-  showPage('page-login');
+  // أخفِ كل الصفحات وأظهر login
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.classList.add('slide-left');
+  });
+  const lp = document.getElementById('page-login');
+  lp.classList.remove('slide-left','slide-right');
+  lp.classList.add('active');
   showToast('👋 تم تسجيل الخروج', 'success');
 }
 
@@ -1981,26 +2018,39 @@ function getDeviceFingerprint() {
 
 async function generateUniqueId(seed) {
   const hash = await hashStr(seed);
-  return 'WF-' + hash.toUpperCase();
+  return 'WF-' + hash.toUpperCase().slice(0,12);
 }
 
 async function finalizeLogin(provider, identifier) {
-  // المعرف = hash من (provider + identifier + device) — فريد لكل شخص
-  const seed = provider + ':' + identifier + ':' + getDeviceFingerprint();
+  // المعرف = hash من (provider + identifier) ثابت عبر كل الأجهزة
+  const seed = provider + ':' + identifier.toLowerCase();
   const uid  = await generateUniqueId(seed);
 
-  localStorage.setItem('wf_user_id',    uid);
-  // store uid in users record
-  if (provider === 'email') {
-    const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
-    if (users[identifier]) { users[identifier].uid = uid; localStorage.setItem('wf_users', JSON.stringify(users)); }
+  // توليد رمز API فريد لكل مستخدم — يُحفظ مرة واحدة فقط
+  const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
+  if (!users[identifier]) { users[identifier] = {}; }
+  if (!users[identifier].apiToken) {
+    // توليد رمز طويل فريد
+    const tokenSeed = 'api:' + identifier + ':' + Date.now() + ':' + Math.random();
+    const tokenHash = await hashStr(tokenSeed + Math.random().toString(36));
+    users[identifier].apiToken = tokenHash.toUpperCase() + Math.random().toString(36).slice(2).toUpperCase();
   }
+  users[identifier].uid = uid;
+  localStorage.setItem('wf_users', JSON.stringify(users));
+
+  const apiToken = users[identifier].apiToken;
+
+  localStorage.setItem('wf_user_id',    uid);
+  localStorage.setItem('wf_api_token',  apiToken);
   localStorage.setItem('wf_provider',   provider);
   localStorage.setItem('wf_identifier', identifier);
   localStorage.setItem('wf_logged_in',  '1');
 
+  // تحديث حقول الإعدادات
   const el = document.getElementById('userIdField');
   if (el) el.value = uid;
+  const tf = document.getElementById('tokenField');
+  if (tf) tf.value = apiToken;
 
   document.getElementById('bottom-nav').classList.remove('hidden');
   switchTab('main');
@@ -2011,17 +2061,16 @@ async function finalizeLogin(provider, identifier) {
 
 // ── showPage helper ──────────────────────────────────────
 function showPage(pageId) {
-  const loginPages = ['page-login','page-register','page-verify-reg','page-forgot','page-verify-forgot'];
-  document.querySelectorAll('.page').forEach(p => {
+  // فقط أخفِ الصفحات المرئية بدلاً من كل الصفحات
+  document.querySelectorAll('.page.active').forEach(p => {
     p.classList.remove('active');
     p.classList.add('slide-left');
-    // reset visibility for non-login pages to avoid black flash
-    if (!loginPages.includes(p.id)) {
-      p.style.background = '';
-    }
   });
   const target = document.getElementById(pageId);
-  if (target) { target.classList.remove('slide-left','slide-right'); target.classList.add('active'); }
+  if (target) {
+    target.classList.remove('slide-left', 'slide-right');
+    target.classList.add('active');
+  }
 }
 
 // ── إيميل وهمي للتحقق (localStorage كـ DB مؤقت) ──────────
@@ -2199,14 +2248,20 @@ function loginWithGoogle() {
 })();
 
 function loginWithEmail() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pass  = document.getElementById('login-pass').value;
+  const emailRaw = document.getElementById('login-email').value.trim();
+  const email    = emailRaw.toLowerCase();
+  const pass     = document.getElementById('login-pass').value;
   if (!email) { showToast('أدخل البريد الإلكتروني', 'error'); return; }
   if (!pass)  { showToast('أدخل كلمة المرور', 'error'); return; }
   const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
-  if (!users[email]) { showToast('البريد غير مسجل، أنشئ حساباً أولاً', 'error'); return; }
-  if (users[email].pass !== pass) { showToast('كلمة المرور غير صحيحة', 'error'); return; }
-  finalizeLogin('email', email);
+  // البحث case-insensitive
+  let foundKey = null;
+  for (const k of Object.keys(users)) {
+    if (k.toLowerCase() === email) { foundKey = k; break; }
+  }
+  if (!foundKey) { showToast('البريد غير مسجل، أنشئ حساباً أولاً', 'error'); return; }
+  if (users[foundKey].pass !== pass) { showToast('كلمة المرور غير صحيحة', 'error'); return; }
+  finalizeLogin('email', foundKey);
 }
 
 // ── تهيئة عند التحميل ────────────────────────────────────
@@ -2215,13 +2270,21 @@ function loginWithEmail() {
   const uid      = localStorage.getItem('wf_user_id');
 
   if (loggedIn && uid) {
-    // مسجل مسبقاً — اذهب للرئيسية مباشرة
+    // مسجل مسبقاً — استعد البيانات وانتقل للرئيسية
     const el = document.getElementById('userIdField');
     if (el) el.value = uid;
+    const apiToken = localStorage.getItem('wf_api_token') || '';
+    const tf = document.getElementById('tokenField');
+    if (tf) tf.value = apiToken;
+    // استعد الإيميل في حقل الإعدادات
+    const identifier = localStorage.getItem('wf_identifier') || '';
+    const emailEl = document.getElementById('settings-email-field');
+    if (emailEl && identifier) emailEl.value = identifier;
     // انتقل للرئيسية بدون animation
-    document.getElementById('page-login').classList.remove('active');
+    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.classList.add('slide-right'); });
+    document.getElementById('page-login').classList.remove('active','slide-right');
     document.getElementById('page-login').classList.add('slide-left');
-    document.getElementById('page-main').classList.remove('slide-right');
+    document.getElementById('page-main').classList.remove('slide-right','slide-left');
     document.getElementById('page-main').classList.add('active');
     history_stack = ['main'];
     document.getElementById('bottom-nav').classList.remove('hidden');
@@ -2325,7 +2388,8 @@ function syncAllBalances() {
 let allOrders = JSON.parse(localStorage.getItem('wf_orders') || '[]');
 
 function saveOrder(name, qty, status, cost) {
-  allOrders.unshift({ name, qty, status, icon: '🛒', id: Date.now(), cost: cost || 0 });
+  const userId = localStorage.getItem('wf_user_id') || '';
+  allOrders.unshift({ name, qty, status, icon: '🛒', id: Date.now(), cost: cost || 0, userId });
   localStorage.setItem('wf_orders', JSON.stringify(allOrders));
   renderOrders('all');
 }
