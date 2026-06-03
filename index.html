@@ -75,6 +75,11 @@
       will-change: transform, opacity;
       -webkit-overflow-scrolling: touch;
       height: 100%;
+      isolation: isolate;
+    }
+    /* Ensure non-login pages never show black background */
+    .page:not(#page-login):not(#page-register):not(#page-verify-reg):not(#page-forgot):not(#page-verify-forgot) {
+      background: var(--bg) !important;
     }
 
     .page.slide-right { transform: translateX(-100%); opacity: 0; pointer-events: none; z-index: 1; visibility: hidden; }
@@ -958,59 +963,89 @@
       <h2>الاعدادات</h2>
     </div>
     <div class="settings-tabs">
-      <button class="tab-btn active">الاعدادات</button>
-      <button class="tab-btn">سجل الدفع</button>
+      <button class="tab-btn active" onclick="switchSettingsTab('settings',this)">الاعدادات</button>
+      <button class="tab-btn" onclick="switchSettingsTab('payments',this)">سجل الدفع</button>
     </div>
-    <div class="setting-item">
-      <label>معرف الحساب</label>
-      <div class="input-with-copy">
-        <input type="text" id="userIdField" readonly value="WF-000001">
-        <button onclick="copyUserId()" title="نسخ المعرف">📋</button>
+
+    <!-- TAB: الاعدادات -->
+    <div id="settings-tab-settings">
+      <div class="setting-item">
+        <label>معرف الحساب</label>
+        <div class="input-with-copy">
+          <input type="text" id="userIdField" readonly placeholder="WF-XXXXXXXX">
+          <button onclick="copyUserId()" title="نسخ المعرف">📋</button>
+        </div>
+      </div>
+
+      <div class="setting-item" style="margin-top:14px;">
+        <label>كلمة المرور القديمة</label>
+        <div style="position:relative;">
+          <input type="password" id="old-pass-field" placeholder="••••••••" style="width:100%;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:0 44px 0 14px;font-family:var(--font);font-size:14px;color:var(--text-h);outline:none;">
+          <button onclick="togglePassVis('old-pass-field',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;">👁</button>
+        </div>
+      </div>
+      <div class="setting-item">
+        <label>غير كلمة السر</label>
+        <div style="position:relative;">
+          <input type="password" id="new-pass-field" placeholder="••••••••" style="width:100%;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:0 44px 0 14px;font-family:var(--font);font-size:14px;color:var(--text-h);outline:none;">
+          <button onclick="togglePassVis('new-pass-field',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;">👁</button>
+        </div>
+      </div>
+      <div class="checkbox-container">
+        <input type="checkbox" id="logoutAll">
+        <label for="logoutAll">تسجيل خروج لكل الاجهزه</label>
+      </div>
+      <button class="action-btn-main" onclick="changePassword()">غير كلمة السر</button>
+
+      <hr class="section-divider">
+
+      <div class="setting-item">
+        <label>إعدادات البريد الإلكتروني</label>
+        <input type="email" id="settings-email-field" placeholder="بريد إلكتروني" style="width:100%;height:44px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:0 14px;font-family:var(--font);font-size:14px;color:var(--text-h);outline:none;">
+      </div>
+      <button class="action-btn-main" onclick="saveEmail()" style="margin-bottom:8px;">حفظ</button>
+      <button class="action-btn-main" onclick="confirmEmail()" style="margin-top:4px;background:#F59E0B;">تأكيد عنوان البريد الإلكتروني</button>
+
+      <hr class="section-divider">
+
+      <div class="setting-item">
+        <label>API — الرمز الخاص بك</label>
+        <div class="input-with-copy">
+          <input type="text" id="tokenField" readonly placeholder="رمزك...">
+          <button onclick="copyToken()" title="نسخ الرمز">📋</button>
+        </div>
+      </div>
+      <button class="action-btn-main" onclick="regenerateToken()">تغيير الرمز المميز</button>
+
+      <hr class="section-divider">
+
+      <button class="action-btn-main" onclick="doLogout()" style="background:rgba(229,62,62,0.1);color:var(--red);border:1px solid rgba(229,62,62,0.2);">تسجيل خروج</button>
+
+      <hr class="section-divider">
+
+      <div class="auth-box">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Google_Authenticator_logo.svg" alt="Google Authenticator" width="40">
+        <h3>Google Authenticator</h3>
+        <button class="connect-btn">اربط</button>
+      </div>
+
+      <div class="stats-card">
+        <h2 id="totalOrdersCount">0</h2>
+        <p>اجمالي عدد طلباتك</p>
+      </div>
+      <div class="stats-card">
+        <h2 id="totalSpentAmount">$0.00</h2>
+        <p>صرفت معنا</p>
       </div>
     </div>
-    <div class="setting-item">
-      <label>كلمة المرور القديمة</label>
-      <input type="password" placeholder="••••••••">
-    </div>
-    <div class="setting-item">
-      <label>غير كلمة السر</label>
-      <input type="password" placeholder="••••••••">
-    </div>
-    <div class="checkbox-container">
-      <input type="checkbox" id="logoutAll">
-      <label for="logoutAll">تسجيل خروج لكل الاجهزه</label>
-    </div>
-    <button class="action-btn-main">غير كلمة السر</button>
-    <hr class="section-divider">
-    <div class="setting-item">
-      <label>إعدادات البريد الإلكتروني</label>
-      <input type="email" value="user@gmail.com">
-    </div>
-    <button class="action-btn-main" style="margin-bottom:0;">حفظ</button>
-    <hr class="section-divider">
-    <div class="setting-item">
-      <label>الرمز المميز</label>
-      <div class="input-with-copy">
-        <input type="text" id="tokenField" readonly value="4LjeZHfeNj4R...OEEDT4uEQVjW">
-        <button onclick="copyToken()">📋</button>
+
+    <!-- TAB: سجل الدفع -->
+    <div id="settings-tab-payments" style="display:none;padding:20px;">
+      <div id="payments-list-modal">
+        <p style="text-align:center;color:var(--text-muted);font-size:14px;padding:40px 0;">لا توجد مدفوعات بعد</p>
       </div>
     </div>
-    <button class="action-btn-main">تغيير الرمز المميز</button>
-    <hr class="section-divider">
-    <button class="logout-btn">تسجيل خروج</button>
-    <div class="auth-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Google_Authenticator_logo.svg" alt="Google Authenticator" width="40">
-      <h3>Google Authenticator</h3>
-      <button class="connect-btn">اربط</button>
-    </div>
-    <div class="stats-card">
-      <h2 id="totalOrdersCount">0</h2>
-      <p>اجمالي عدد طلباتك</p>
-    </div>
-    <div class="stats-card">
-      <h2 id="totalSpentAmount">0.00 د.ع</h2>
-      <p>صرفت معنا</p>
-    </div>
+
   </div>
 </div>
 
@@ -1850,10 +1885,87 @@ updateBalanceUI(); overlay.classList.remove('open'); showToast('✅ تم شحن 
 });
 
 // ── الإعدادات ─────────────────────────────────────────────
-function openSettingsModal()  { document.getElementById('settingsModal').style.display = 'flex'; }
+function openSettingsModal() {
+  // تحديث البريد والمعرف
+  const email = localStorage.getItem('wf_identifier') || '';
+  const uid   = localStorage.getItem('wf_user_id') || '';
+  const emailEl = document.getElementById('settings-email-field');
+  if (emailEl && email) emailEl.value = email;
+  const uidEl = document.getElementById('userIdField');
+  if (uidEl && uid) uidEl.value = uid;
+  // تحديث الإحصائيات
+  const orders = JSON.parse(localStorage.getItem('wf_orders') || '[]');
+  const spent  = orders.reduce((s, o) => s + (o.cost || 0), 0);
+  const tc = document.getElementById('totalOrdersCount');
+  const ts = document.getElementById('totalSpentAmount');
+  if (tc) tc.textContent = orders.length;
+  if (ts) ts.textContent = '$' + spent.toFixed(2);
+  document.getElementById('settingsModal').style.display = 'flex';
+}
 function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
 function copyUserId() { navigator.clipboard.writeText(document.getElementById('userIdField').value); showToast('✅ تم نسخ المعرف', 'success'); }
 function copyToken()  { navigator.clipboard.writeText(document.getElementById('tokenField').value);  showToast('✅ تم نسخ الرمز', 'success'); }
+
+function switchSettingsTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('settings-tab-settings').style.display = tab === 'settings' ? 'block' : 'none';
+  document.getElementById('settings-tab-payments').style.display = tab === 'payments' ? 'block' : 'none';
+}
+
+function togglePassVis(fieldId, btn) {
+  const f = document.getElementById(fieldId);
+  if (!f) return;
+  f.type = f.type === 'password' ? 'text' : 'password';
+  btn.textContent = f.type === 'password' ? '👁' : '🙈';
+}
+
+function changePassword() {
+  const oldPass = document.getElementById('old-pass-field').value;
+  const newPass = document.getElementById('new-pass-field').value;
+  if (!oldPass) { showToast('أدخل كلمة المرور القديمة', 'error'); return; }
+  if (!newPass || newPass.length < 6) { showToast('كلمة المرور الجديدة 6 أحرف على الأقل', 'error'); return; }
+  const email = localStorage.getItem('wf_identifier') || '';
+  const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
+  if (!users[email]) { showToast('تعذر التحقق من الحساب', 'error'); return; }
+  if (users[email].pass !== oldPass) { showToast('كلمة المرور القديمة غير صحيحة', 'error'); return; }
+  users[email].pass = newPass;
+  localStorage.setItem('wf_users', JSON.stringify(users));
+  document.getElementById('old-pass-field').value = '';
+  document.getElementById('new-pass-field').value = '';
+  showToast('✅ تم تغيير كلمة السر بنجاح', 'success');
+}
+
+function saveEmail() {
+  const newEmail = document.getElementById('settings-email-field').value.trim();
+  if (!newEmail) { showToast('أدخل بريداً إلكترونياً', 'error'); return; }
+  localStorage.setItem('wf_identifier', newEmail);
+  showToast('✅ تم حفظ البريد الإلكتروني', 'success');
+}
+
+function confirmEmail() {
+  showToast('📧 تم إرسال رابط التأكيد لبريدك', 'success');
+}
+
+function regenerateToken() {
+  const newToken = 'WF-' + Math.random().toString(36).slice(2).toUpperCase() + Math.random().toString(36).slice(2).toUpperCase();
+  const tf = document.getElementById('tokenField');
+  if (tf) tf.value = newToken;
+  localStorage.setItem('wf_token', newToken);
+  showToast('✅ تم تجديد الرمز المميز', 'success');
+}
+
+function doLogout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  localStorage.removeItem('wf_logged_in');
+  localStorage.removeItem('wf_user_id');
+  localStorage.removeItem('wf_provider');
+  localStorage.removeItem('wf_identifier');
+  closeSettingsModal();
+  document.getElementById('bottom-nav').classList.add('hidden');
+  showPage('page-login');
+  showToast('👋 تم تسجيل الخروج', 'success');
+}
 
 // ── نظام المصادقة والمعرف الفريد ──────────────────────────
 
@@ -1899,9 +2011,14 @@ async function finalizeLogin(provider, identifier) {
 
 // ── showPage helper ──────────────────────────────────────
 function showPage(pageId) {
+  const loginPages = ['page-login','page-register','page-verify-reg','page-forgot','page-verify-forgot'];
   document.querySelectorAll('.page').forEach(p => {
     p.classList.remove('active');
     p.classList.add('slide-left');
+    // reset visibility for non-login pages to avoid black flash
+    if (!loginPages.includes(p.id)) {
+      p.style.background = '';
+    }
   });
   const target = document.getElementById(pageId);
   if (target) { target.classList.remove('slide-left','slide-right'); target.classList.add('active'); }
@@ -2207,8 +2324,8 @@ function syncAllBalances() {
 // ── Orders ────────────────────────────────────────────────
 let allOrders = JSON.parse(localStorage.getItem('wf_orders') || '[]');
 
-function saveOrder(name, qty, status) {
-  allOrders.unshift({ name, qty, status, icon: '🛒', id: Date.now() });
+function saveOrder(name, qty, status, cost) {
+  allOrders.unshift({ name, qty, status, icon: '🛒', id: Date.now(), cost: cost || 0 });
   localStorage.setItem('wf_orders', JSON.stringify(allOrders));
   renderOrders('all');
 }
