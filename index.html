@@ -1861,25 +1861,21 @@ function loginWithGoogle() {
     client_id: '316214794759-jqbd46lca0kpdeug8mvt71vasv9s74bj.apps.googleusercontent.com',
     callback: handleGoogleLogin,
     auto_select: false,
-    ux_mode: 'popup'
+    cancel_on_tap_outside: false
   });
-  // إنشاء زر مخفي وضغطه لفتح نافذة اختيار الحساب
-  const btnDiv = document.createElement('div');
-  btnDiv.style.display = 'none';
-  document.body.appendChild(btnDiv);
-  google.accounts.id.renderButton(btnDiv, {
-    type: 'standard',
-    theme: 'outline',
-    size: 'large'
+  google.accounts.id.prompt(function(notification) {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // One Tap مو متاح، استخدم الزر المخفي
+      const wrap = document.createElement('div');
+      wrap.id = 'gsi-btn-wrap';
+      wrap.style.cssText = 'position:fixed;opacity:0;top:0;left:0;z-index:-1;';
+      document.body.appendChild(wrap);
+      google.accounts.id.renderButton(wrap, { type: 'standard', size: 'large' });
+      const btn = wrap.querySelector('div[role=button]');
+      if (btn) btn.click();
+      setTimeout(() => { const el = document.getElementById('gsi-btn-wrap'); if(el) el.remove(); }, 5000);
+    }
   });
-  const gBtn = btnDiv.querySelector('div[role=button]');
-  if (gBtn) {
-    gBtn.click();
-    setTimeout(() => document.body.removeChild(btnDiv), 3000);
-  } else {
-    google.accounts.id.prompt();
-    setTimeout(() => document.body.removeChild(btnDiv), 3000);
-  }
 }
 
 function loginWithEmail() {
