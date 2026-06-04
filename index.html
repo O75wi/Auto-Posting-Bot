@@ -445,8 +445,14 @@ document.addEventListener('DOMContentLoaded', function() {
     .settings-container::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 200px;
-      background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 70%);
+      background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 70%);
       pointer-events: none; z-index: 0;
+      animation: settingsGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes settingsGlow {
+      0%   { background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%); }
+      50%  { background: radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.15) 0%, transparent 70%); }
+      100% { background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.13) 0%, transparent 70%); }
     }
     @keyframes sheetUp {
       from { transform: translateY(100%); opacity: 0; }
@@ -2307,7 +2313,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 <!-- PAGE — Binance Dark -->
-<section class="page slide-right" id="page-binance-charge" style="background:linear-gradient(180deg,#1a1200 0%,#0d0a00 40%,#050400 70%,#0d0a00 100%);color:#fff;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;">
+<section class="page slide-right" id="page-binance-charge" style="background:linear-gradient(180deg,#1a1200 0%,#0d0a00 40%,#050400 70%,#0d0a00 100%);color:#fff;">
 
   <!-- HEADER -->
   <header style="background:rgba(15,11,0,0.97);border-bottom:1px solid rgba(218,165,32,0.45);position:sticky;top:0;z-index:20;backdrop-filter:blur(18px);box-shadow:0 2px 24px rgba(218,165,32,0.18);">
@@ -3685,6 +3691,8 @@ function doLogout() {
   localStorage.removeItem('wf_api_token');
   localStorage.removeItem('wf_provider');
   localStorage.removeItem('wf_identifier');
+  localStorage.removeItem('wf_is_admin');
+  hideAdminMenuBtn();
   closeSettingsModal();
   // إعادة تعيين الحالة
   history_stack = ['login'];
@@ -3726,30 +3734,33 @@ async function finalizeLogin(provider, identifier) {
   const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
   if (!users[identifier]) { users[identifier] = {}; }
   if (!users[identifier].apiToken) {
-    // توليد رمز طويل فريد
     const tokenSeed = 'api:' + identifier + ':' + Date.now() + ':' + Math.random();
     const tokenHash = await hashStr(tokenSeed + Math.random().toString(36));
     users[identifier].apiToken = tokenHash.toUpperCase() + Math.random().toString(36).slice(2).toUpperCase();
   }
-  users[identifier].uid = uid;
+  // ── الـ uid دائماً ثابت: نولّده مرة ونحفظه للأبد ──
+  if (!users[identifier].uid) {
+    users[identifier].uid = uid;
+  }
+  const stableUid = users[identifier].uid;
   localStorage.setItem('wf_users', JSON.stringify(users));
 
   const apiToken = users[identifier].apiToken;
 
-  localStorage.setItem('wf_user_id',    uid);
+  localStorage.setItem('wf_user_id',    stableUid);
   localStorage.setItem('wf_api_token',  apiToken);
   localStorage.setItem('wf_provider',   provider);
   localStorage.setItem('wf_identifier', identifier);
   localStorage.setItem('wf_logged_in',  '1');
 
   // تسجيل في سجل المستخدمين برصيد صفر (إن لم يكن موجوداً)
-  const regEntry = registerUserInRegistry(uid, identifier, provider);
+  const regEntry = registerUserInRegistry(stableUid, identifier, provider);
   // استرداد الرصيد من السجل (يضمن رصيد صفر للجديد)
   balance = regEntry.balance || 0;
 
   // تحديث حقول الإعدادات
   const el = document.getElementById('userIdField');
-  if (el) el.value = uid;
+  if (el) el.value = stableUid;
   const tf = document.getElementById('tokenField');
   if (tf) tf.value = apiToken;
 
@@ -3966,8 +3977,37 @@ function loginWithEmail() {
   finalizeLogin('email', foundKey);
 }
 
+// ── ترحيل الحسابات القديمة → registry ──────────────────
+// أي مستخدم سجل قبل نظام الـ registry يُضاف تلقائياً
+function migrateOldUsers() {
+  const wfUsers = JSON.parse(localStorage.getItem('wf_users') || '{}');
+  const reg = getUsersRegistry();
+  let changed = false;
+  for (const email in wfUsers) {
+    const u = wfUsers[email];
+    if (!u.uid) continue;
+    if (!reg[u.uid]) {
+      reg[u.uid] = {
+        uid: u.uid,
+        email: email,
+        provider: u.provider || 'email',
+        balance: u.balance || 0,
+        totalCharged: u.totalCharged || 0,
+        totalSpent: u.totalSpent || 0,
+        joinedAt: u.joinedAt || '—',
+        orders: u.orders || 0
+      };
+      changed = true;
+    }
+  }
+  if (changed) saveUsersRegistry(reg);
+}
+
 // ── تهيئة عند التحميل ────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function() {
+  // ترحيل الحسابات القديمة أولاً
+  migrateOldUsers();
+
   const loggedIn = localStorage.getItem('wf_logged_in');
   const uid      = localStorage.getItem('wf_user_id');
 
@@ -3982,6 +4022,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const identifier = localStorage.getItem('wf_identifier') || '';
     const emailEl = document.getElementById('settings-email-field');
     if (emailEl && identifier) emailEl.value = identifier;
+    // استعد الرصيد من registry
+    const reg = getUsersRegistry();
+    if (reg[uid]) { balance = reg[uid].balance || 0; updateBalanceUI(); }
     // انتقل للرئيسية بدون animation
     document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.classList.add('slide-right'); });
     document.getElementById('page-login').classList.remove('active','slide-right');
@@ -3992,6 +4035,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('bottom-nav').classList.remove('hidden');
     document.getElementById('nav-main').classList.add('active');
     document.getElementById('nav-orders').classList.remove('active');
+    // أظهر أزرار الأدمن لو كان أدمن
+    if (localStorage.getItem('wf_is_admin')) {
+      showAdminMenuBtn();
+    }
   }
 });
 
@@ -4594,6 +4641,13 @@ function showAdminMenuBtn() {
   if (topupBtn) topupBtn.style.display = '';
 }
 
+function hideAdminMenuBtn() {
+  const btn = document.getElementById('admin-users-btn');
+  if (btn) btn.style.display = 'none';
+  const topupBtn = document.getElementById('admin-topup-btn');
+  if (topupBtn) topupBtn.style.display = 'none';
+}
+
 // ══ تعبئة رصيد — أدمن فقط ══════════════════════════
 let _topupFoundUid = null;
 
@@ -4629,32 +4683,19 @@ function executeTopup() {
   if (!_topupFoundUid) { showToast('❌ اختر مستخدماً أولاً', 'error'); return; }
   const amount = parseFloat(document.getElementById('topup-amount-input').value);
   if (!amount || amount <= 0) { showToast('❌ أدخل مبلغاً صحيحاً', 'error'); return; }
-
-  // منع الضغط المتكرر
-  const btn = document.querySelector('#topup-amount-card button[onclick="executeTopup()"]');
-  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
-
   const reg = getUsersRegistry();
-  if (!reg[_topupFoundUid]) { showToast('❌ المستخدم غير موجود', 'error'); if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.pointerEvents = ''; } return; }
+  if (!reg[_topupFoundUid]) { showToast('❌ المستخدم غير موجود', 'error'); return; }
   reg[_topupFoundUid].balance = (reg[_topupFoundUid].balance || 0) + amount;
-  reg[_topupFoundUid].totalCharged = (reg[_topupFoundUid].totalCharged || 0) + amount;
   saveUsersRegistry(reg);
-
+  // لو نفس المستخدم مسجل دخول الآن، حدّث رصيده مباشرة
   if (localStorage.getItem('wf_user_id') === _topupFoundUid) {
-    balance = reg[_topupFoundUid].balance;
-    updateBalanceUI();
+    const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
+    if (users[_topupFoundUid]) { users[_topupFoundUid].balance = reg[_topupFoundUid].balance; localStorage.setItem('wf_users', JSON.stringify(users)); }
+    updateBalanceDisplay();
   }
-
   showToast(`✅ تمت تعبئة ${amount.toFixed(2)} د.ع`, 'success');
   document.getElementById('topup-user-balance').textContent = reg[_topupFoundUid].balance.toFixed(2) + ' د.ع';
   document.getElementById('topup-amount-input').value = '';
-
-  // إخفاء كرت المبلغ بعد التعبئة لمنع أي ضغطة غلط
-  setTimeout(() => {
-    const amountCard = document.getElementById('topup-amount-card');
-    if (amountCard) amountCard.style.display = 'none';
-    _topupFoundUid = null;
-  }, 1200);
 }
 
 // مفتاح تخزين سجل المستخدمين المشترك
