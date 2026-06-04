@@ -270,6 +270,21 @@ def user_list():
 
 
 # ────────────────────────────────────────────────────────────
+@app.route("/services/list", methods=["GET"])
+def services_list():
+    """جلب أسعار الخدمات من دارك فولو"""
+    try:
+        resp = requests.post(DARKFOLLOW_API_URL, data={
+            "key": DARKFOLLOW_API_KEY,
+            "action": "services"
+        })
+        data = resp.json()
+        services = {str(s["service"]): s for s in data}
+        return jsonify({"ok": True, "services": services})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+# ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     # تفعيل أوامر البوت عند بدء التشغيل
     threading.Thread(target=set_bot_commands, daemon=True).start()
