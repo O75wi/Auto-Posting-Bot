@@ -39,89 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
     (function(){ emailjs.init({ publicKey: 'imTEA8822h7lbmfjJ' }); })();
   </script>
 
-  <!-- ══ Firebase SDK ══ -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_XuznmbsMzEU9S6z4pZmIYp5C0J1cbvI",
-      authDomain: "white-follow.firebaseapp.com",
-      projectId: "white-follow",
-      storageBucket: "white-follow.firebasestorage.app",
-      messagingSenderId: "90014987732",
-      appId: "1:90014987732:web:41aeb821842debced8d241",
-      measurementId: "G-M9D40YNX29"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-
-    // ── تسجيل/تحديث مستخدم في Firebase ──
-    window.fbSaveUser = async function(uid, data) {
-      try {
-        const ref = doc(db, 'users', uid);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          await setDoc(ref, { ...data, createdAt: new Date().toISOString() });
-        } else {
-          // حدّث فقط الحقول الموجودة (لا تمسح الرصيد)
-          const existing = snap.data();
-          await setDoc(ref, { ...existing, email: data.email, provider: data.provider }, { merge: true });
-        }
-      } catch(e) { console.warn('fbSaveUser error:', e); }
-    };
-
-    // ── جلب مستخدم بالـ uid أو الإيميل ──
-    window.fbGetUser = async function(searchVal) {
-      try {
-        // أولاً جرب بالـ uid مباشرة
-        const ref = doc(db, 'users', searchVal);
-        const snap = await getDoc(ref);
-        if (snap.exists()) return { uid: searchVal, ...snap.data() };
-
-        // ثانياً ابحث بالإيميل
-        const q = query(collection(db, 'users'), where('email', '==', searchVal.toLowerCase()));
-        const qs = await getDocs(q);
-        if (!qs.empty) {
-          const d = qs.docs[0];
-          return { uid: d.id, ...d.data() };
-        }
-
-        // ثالثاً ابحث بالـ uid المخزون كـ field
-        const q2 = query(collection(db, 'users'), where('uid', '==', searchVal));
-        const qs2 = await getDocs(q2);
-        if (!qs2.empty) {
-          const d = qs2.docs[0];
-          return { uid: d.id, ...d.data() };
-        }
-
-        return null;
-      } catch(e) { console.warn('fbGetUser error:', e); return null; }
-    };
-
-    // ── تحديث رصيد مستخدم ──
-    window.fbUpdateBalance = async function(uid, newBalance, totalCharged) {
-      try {
-        const ref = doc(db, 'users', uid);
-        const upd = { balance: newBalance };
-        if (totalCharged !== undefined) upd.totalCharged = totalCharged;
-        await updateDoc(ref, upd);
-      } catch(e) { console.warn('fbUpdateBalance error:', e); }
-    };
-
-    // ── جلب كل المستخدمين (للأدمن) ──
-    window.fbGetAllUsers = async function() {
-      try {
-        const qs = await getDocs(collection(db, 'users'));
-        return qs.docs.map(d => ({ uid: d.id, ...d.data() }));
-      } catch(e) { console.warn('fbGetAllUsers error:', e); return []; }
-    };
-
-    window._fbReady = true;
-    console.log('✅ Firebase متصل');
-  </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -528,14 +445,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .settings-container::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 200px;
-      background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 70%);
+      background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 70%);
       pointer-events: none; z-index: 0;
-      animation: settingsGlow 4s ease-in-out infinite alternate;
-    }
-    @keyframes settingsGlow {
-      0%   { background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%); }
-      50%  { background: radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.15) 0%, transparent 70%); }
-      100% { background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.13) 0%, transparent 70%); }
     }
     @keyframes sheetUp {
       from { transform: translateY(100%); opacity: 0; }
@@ -2396,7 +2307,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 <!-- PAGE — Binance Dark -->
-<section class="page slide-right" id="page-binance-charge" style="background:linear-gradient(180deg,#1a1200 0%,#0d0a00 40%,#050400 70%,#0d0a00 100%);color:#fff;">
+<section class="page slide-right" id="page-binance-charge" style="background:linear-gradient(180deg,#1a1200 0%,#0d0a00 40%,#050400 70%,#0d0a00 100%);color:#fff;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;">
 
   <!-- HEADER -->
   <header style="background:rgba(15,11,0,0.97);border-bottom:1px solid rgba(218,165,32,0.45);position:sticky;top:0;z-index:20;backdrop-filter:blur(18px);box-shadow:0 2px 24px rgba(218,165,32,0.18);">
@@ -3836,29 +3747,6 @@ async function finalizeLogin(provider, identifier) {
   // استرداد الرصيد من السجل (يضمن رصيد صفر للجديد)
   balance = regEntry.balance || 0;
 
-  // ── حفظ في Firebase وجلب الرصيد المحدّث (قد يكون الأدمن شحنه) ──
-  if (window.fbSaveUser) {
-    window.fbSaveUser(uid, {
-      uid, email: identifier, provider,
-      balance: balance,
-      totalCharged: regEntry.totalCharged || 0,
-      totalSpent: regEntry.totalSpent || 0,
-      joinedAt: regEntry.joinedAt || new Date().toLocaleDateString('ar-IQ'),
-      orders: regEntry.orders || 0
-    });
-    // جلب الرصيد الحقيقي من Firebase (يعكس أي شحن من الأدمن)
-    if (window.fbGetUser) {
-      window.fbGetUser(uid).then(fbUser => {
-        if (fbUser && typeof fbUser.balance === 'number') {
-          balance = fbUser.balance;
-          const reg2 = getUsersRegistry();
-          if (reg2[uid]) { reg2[uid].balance = balance; saveUsersRegistry(reg2); }
-          updateBalanceUI();
-        }
-      });
-    }
-  }
-
   // تحديث حقول الإعدادات
   const el = document.getElementById('userIdField');
   if (el) el.value = uid;
@@ -4709,96 +4597,64 @@ function showAdminMenuBtn() {
 // ══ تعبئة رصيد — أدمن فقط ══════════════════════════
 let _topupFoundUid = null;
 
-async function topupSearchUser() {
+function topupSearchUser() {
   const uid = (document.getElementById('topup-uid-input').value || '').trim();
-  const resultEl   = document.getElementById('topup-user-result');
-  const errorEl    = document.getElementById('topup-user-error');
+  const resultEl = document.getElementById('topup-user-result');
+  const errorEl  = document.getElementById('topup-user-error');
   const amountCard = document.getElementById('topup-amount-card');
-  resultEl.style.display   = 'none';
-  errorEl.style.display    = 'none';
+  resultEl.style.display = 'none';
+  errorEl.style.display  = 'none';
   amountCard.style.display = 'none';
   _topupFoundUid = null;
   if (!uid) return;
-
-  // مؤشر تحميل
-  errorEl.textContent = '⏳ جاري البحث...';
-  errorEl.style.display = 'block';
-  errorEl.style.color = '#1DB954';
-
+  const reg = getUsersRegistry();
+  // البحث بالمعرف المباشر أو الـ uid
+  let foundKey = null;
   let foundUser = null;
-
-  // أولاً: Firebase (مشترك بين كل الأجهزة)
-  if (window.fbGetUser) {
-    foundUser = await window.fbGetUser(uid);
+  for (const k in reg) {
+    if (k === uid || reg[k].uid === uid) { foundKey = k; foundUser = reg[k]; break; }
   }
-
-  // ثانياً: fallback على localStorage
-  if (!foundUser) {
-    const reg = getUsersRegistry();
-    for (const k in reg) {
-      if (k === uid || reg[k].uid === uid || (reg[k].email && reg[k].email.toLowerCase() === uid.toLowerCase())) {
-        foundUser = { ...reg[k], uid: k }; break;
-      }
-    }
-  }
-
-  errorEl.style.display = 'none';
-  errorEl.textContent   = '❌ المستخدم غير موجود';
-  errorEl.style.color   = '';
-
   if (!foundUser) {
     errorEl.style.display = 'block';
     return;
   }
-
-  _topupFoundUid = foundUser.uid;
-  document.getElementById('topup-user-email').textContent   = foundUser.email || foundUser.uid;
+  _topupFoundUid = foundKey;
+  document.getElementById('topup-user-email').textContent   = foundUser.email || foundKey;
   document.getElementById('topup-user-balance').textContent = (foundUser.balance || 0).toFixed(2) + ' د.ع';
-  resultEl.style.display   = 'block';
+  resultEl.style.display = 'block';
   amountCard.style.display = 'block';
 }
 
-async function executeTopup() {
+function executeTopup() {
   if (!_topupFoundUid) { showToast('❌ اختر مستخدماً أولاً', 'error'); return; }
   const amount = parseFloat(document.getElementById('topup-amount-input').value);
   if (!amount || amount <= 0) { showToast('❌ أدخل مبلغاً صحيحاً', 'error'); return; }
 
-  // جلب الرصيد الحالي
-  let currentBalance = 0;
-  let currentCharged = 0;
-  if (window.fbGetUser) {
-    const u = await window.fbGetUser(_topupFoundUid);
-    if (u) { currentBalance = u.balance || 0; currentCharged = u.totalCharged || 0; }
-  } else {
-    const reg = getUsersRegistry();
-    if (reg[_topupFoundUid]) { currentBalance = reg[_topupFoundUid].balance || 0; currentCharged = reg[_topupFoundUid].totalCharged || 0; }
-  }
+  // منع الضغط المتكرر
+  const btn = document.querySelector('#topup-amount-card button[onclick="executeTopup()"]');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
 
-  const newBalance = currentBalance + amount;
-  const newCharged = currentCharged + amount;
-
-  // حفظ في Firebase
-  if (window.fbUpdateBalance) {
-    await window.fbUpdateBalance(_topupFoundUid, newBalance, newCharged);
-  }
-
-  // حفظ في localStorage أيضاً كـ backup
   const reg = getUsersRegistry();
-  if (reg[_topupFoundUid]) {
-    reg[_topupFoundUid].balance      = newBalance;
-    reg[_topupFoundUid].totalCharged = newCharged;
-    saveUsersRegistry(reg);
-  }
+  if (!reg[_topupFoundUid]) { showToast('❌ المستخدم غير موجود', 'error'); if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.pointerEvents = ''; } return; }
+  reg[_topupFoundUid].balance = (reg[_topupFoundUid].balance || 0) + amount;
+  reg[_topupFoundUid].totalCharged = (reg[_topupFoundUid].totalCharged || 0) + amount;
+  saveUsersRegistry(reg);
 
-  // لو نفس المستخدم مسجل دخول الآن على هذا الجهاز
   if (localStorage.getItem('wf_user_id') === _topupFoundUid) {
-    balance = newBalance;
+    balance = reg[_topupFoundUid].balance;
     updateBalanceUI();
   }
 
   showToast(`✅ تمت تعبئة ${amount.toFixed(2)} د.ع`, 'success');
-  document.getElementById('topup-user-balance').textContent = newBalance.toFixed(2) + ' د.ع';
+  document.getElementById('topup-user-balance').textContent = reg[_topupFoundUid].balance.toFixed(2) + ' د.ع';
   document.getElementById('topup-amount-input').value = '';
+
+  // إخفاء كرت المبلغ بعد التعبئة لمنع أي ضغطة غلط
+  setTimeout(() => {
+    const amountCard = document.getElementById('topup-amount-card');
+    if (amountCard) amountCard.style.display = 'none';
+    _topupFoundUid = null;
+  }, 1200);
 }
 
 // مفتاح تخزين سجل المستخدمين المشترك
