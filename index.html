@@ -3856,25 +3856,6 @@ async function registerStep1() {
     btn.disabled = false; btn.textContent = 'التالي — إرسال رمز التحقق';
   }
 }
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  localStorage.setItem('wf_reg_code', code);
-  const btn = document.querySelector('#page-register .login-submit');
-  btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
-  try {
-    await emailjs.send('service_9uuprjg', 'template_21hzvml', {
-      to_email: email,
-      code: code
-    });
-    document.getElementById('verify-reg-sub').textContent = 'تم إرسال رمز التحقق إلى ' + email;
-    showToast('📧 تم إرسال رمز التحقق لبريدك', 'success');
-    showPage('page-verify-reg');
-  } catch(e) {
-    showToast('فشل إرسال الرمز، تحقق من البريد', 'error');
-    console.error(e);
-  } finally {
-    btn.disabled = false; btn.textContent = 'التالي — إرسال رمز التحقق';
-  }
-}
 
 function verifyRegCode() {
   const code = document.getElementById('verify-reg-code').value.trim();
