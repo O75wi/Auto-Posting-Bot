@@ -3,9 +3,22 @@ from flask_cors import CORS
 import requests
 import os
 import threading
+import json
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 CORS(app)
+
+# ── Firebase Admin SDK ─────────────────────────────────────
+_fb_creds_json = os.environ.get("FIREBASE_CREDENTIALS", "")
+if _fb_creds_json:
+    _fb_creds_dict = json.loads(_fb_creds_json)
+    cred = credentials.Certificate(_fb_creds_dict)
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+else:
+    db = None
 
 # ── إعدادات من Railway Environment Variables ──────────────
 DARKFOLLOW_API_URL = "https://darkfollow.shop/api/v2"
@@ -161,6 +174,100 @@ def get_balance():
 @app.route("/")
 def home():
     return jsonify({"status": "✅ السيرفر شغال"})
+
+# ────────────────────────────────────────────────────────────
+# User Endpoints — إدارة المستخدمين عبر Firestore
+# ────────────────────────────────────────────────────────────
+
+@app.route("/user/sync", methods=["POST"])
+def user_sync():
+    """يُستدعى عند تسجيل دخول أي مستخدم — يحفظ بياناته في Firestore"""
+    if not db:
+        return jsonify({"error": "Firebase غير مفعّل"}), 503
+    data = request.get_json()
+    uid  = data.get("uid")
+    if not uid:
+        return jsonify({"error": "uid مطلوب"}), 400
+    ref = db.collection("users").document(uid)
+    doc = ref.get()
+    if doc.exists:
+        # حدّث فقط الحقول القابلة للتغيير (لا تمسح الرصيد)
+        ref.update({
+            "email":        data.get("email", ""),
+            "provider":     data.get("provider", ""),
+            "totalCharged": data.get("totalCharged", 0),
+            "totalSpent":   data.get("totalSpent", 0),
+            "orders":       data.get("orders", 0),
+        })
+    else:
+        # مستخدم جديد — أنشئ الوثيقة برصيد 0
+        ref.set({
+            "uid":          uid,
+            "email":        data.get("email", ""),
+            "provider":     data.get("provider", ""),
+            "balance":      0,
+            "totalCharged": 0,
+            "totalSpent":   0,
+            "orders":       0,
+            "joinedAt":     data.get("joinedAt", ""),
+        })
+    return jsonify({"ok": True})
+
+@app.route("/user/find", methods=["GET"])
+def user_find():
+    """بحث عن مستخدم بالـ uid"""
+    if not db:
+        return jsonify({"error": "Firebase غير مفعّل"}), 503
+    uid = request.args.get("uid", "").strip()
+    if not uid:
+        return jsonify({"error": "uid مطلوب"}), 400
+    doc = db.collection("users").document(uid).get()
+    if not doc.exists:
+        return jsonify({"error": "المستخدم غير موجود"}), 404
+    return jsonify(doc.to_dict())
+
+@app.route("/user/balance", methods=["POST"])
+def user_balance():
+    """شحن رصيد مستخدم — للأدمن فقط"""
+    if not db:
+        return jsonify({"error": "Firebase غير مفعّل"}), 503
+    data    = request.get_json()
+    uid     = data.get("uid")
+    amount  = data.get("amount")
+    if not uid or amount is None:
+        return jsonify({"error": "uid و amount مطلوبان"}), 400
+    ref = db.collection("users").document(uid)
+    doc = ref.get()
+    if not doc.exists:
+        return jsonify({"error": "المستخدم غير موجود"}), 404
+    current = doc.to_dict().get("balance", 0)
+    new_bal = current + float(amount)
+    ref.update({
+        "balance":      new_bal,
+        "totalCharged": firestore.Increment(float(amount))
+    })
+    return jsonify({"ok": True, "newBalance": new_bal})
+
+@app.route("/user/check", methods=["GET"])
+def user_check():
+    """تحقق إذا البريد مسجل مسبقاً"""
+    if not db:
+        return jsonify({"exists": False})
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"exists": False})
+    docs = db.collection("users").where("email", "==", email).limit(1).get()
+    return jsonify({"exists": len(docs) > 0})
+
+@app.route("/user/list", methods=["GET"])
+def user_list():
+    """قائمة كل المستخدمين — للأدمن"""
+    if not db:
+        return jsonify([])
+    docs = db.collection("users").order_by("joinedAt", direction=firestore.Query.DESCENDING).limit(200).get()
+    return jsonify([d.to_dict() for d in docs])
+
+
 
 # ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
