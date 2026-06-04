@@ -3758,6 +3758,24 @@ async function finalizeLogin(provider, identifier) {
   // استرداد الرصيد من السجل (يضمن رصيد صفر للجديد)
   balance = regEntry.balance || 0;
 
+  // ── مزامنة مع السيرفر (لإدارة المستخدمين من الأدمن) ──
+  try {
+    await fetch(`${SERVER_URL}/user/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: stableUid,
+        email: identifier,
+        provider,
+        balance: regEntry.balance || 0,
+        totalCharged: regEntry.totalCharged || 0,
+        totalSpent: regEntry.totalSpent || 0,
+        orders: regEntry.orders || 0,
+        joinedAt: regEntry.joinedAt || new Date().toLocaleDateString('ar-IQ')
+      })
+    });
+  } catch(e) { /* تجاهل إذا السيرفر غير متاح */ }
+
   // تحديث حقول الإعدادات
   const el = document.getElementById('userIdField');
   if (el) el.value = stableUid;
@@ -3766,9 +3784,21 @@ async function finalizeLogin(provider, identifier) {
 
   updateBalanceUI();
   document.getElementById('bottom-nav').classList.remove('hidden');
-  switchTab('main');
-  document.getElementById('nav-main').classList.add('active');
-  document.getElementById('nav-orders').classList.remove('active');
+  // إخفاء جميع صفحات تسجيل الدخول وإظهار الرئيسية مباشرة
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.classList.add('slide-left');
+  });
+  const mainPage = document.getElementById('page-main');
+  if (mainPage) {
+    mainPage.classList.remove('slide-left', 'slide-right');
+    mainPage.classList.add('active');
+    mainPage.scrollTop = 0;
+  }
+  history_stack = ['main'];
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  const navMain = document.getElementById('nav-main');
+  if (navMain) navMain.classList.add('active');
   showToast('✅ مرحباً! تم الدخول بنجاح', 'success');
 }
 
@@ -3801,7 +3831,31 @@ async function registerStep1() {
   if (pass !== pass2) { showToast('كلمتا المرور غير متطابقتان', 'error'); return; }
   const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
   if (users[email]) { showToast('هذا البريد مسجل مسبقاً', 'error'); return; }
+  // تحقق من السيرفر أيضاً
+  try {
+    const chk = await fetch(`${SERVER_URL}/user/check?email=${encodeURIComponent(email)}`);
+    if (chk.ok) { const d = await chk.json(); if (d.exists) { showToast('هذا البريد مسجل مسبقاً', 'error'); return; } }
+  } catch(e) { /* تجاهل خطأ الشبكة */ }
   _pendingReg = { email, pass };
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  localStorage.setItem('wf_reg_code', code);
+  const btn = document.querySelector('#page-register .login-submit');
+  btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
+  try {
+    await emailjs.send('service_9uuprjg', 'template_21hzvml', {
+      to_email: email,
+      code: code
+    });
+    document.getElementById('verify-reg-sub').textContent = 'تم إرسال رمز التحقق إلى ' + email;
+    showToast('📧 تم إرسال رمز التحقق لبريدك', 'success');
+    showPage('page-verify-reg');
+  } catch(e) {
+    showToast('فشل إرسال الرمز، تحقق من البريد', 'error');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'التالي — إرسال رمز التحقق';
+  }
+}
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   localStorage.setItem('wf_reg_code', code);
   const btn = document.querySelector('#page-register .login-submit');
@@ -4025,6 +4079,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     // استعد الرصيد من registry
     const reg = getUsersRegistry();
     if (reg[uid]) { balance = reg[uid].balance || 0; updateBalanceUI(); }
+    // حاول تحديث الرصيد من السيرفر (حيث قد يكون الأدمن شحن)
+    fetch(`${SERVER_URL}/user/find?uid=${encodeURIComponent(uid)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.uid && typeof data.balance === 'number') {
+          balance = data.balance;
+          updateBalanceUI();
+          const reg2 = getUsersRegistry();
+          if (!reg2[uid]) reg2[uid] = {};
+          reg2[uid].balance = data.balance;
+          reg2[uid].totalCharged = data.totalCharged || reg2[uid].totalCharged || 0;
+          saveUsersRegistry(reg2);
+        }
+      })
+      .catch(() => {});
     // انتقل للرئيسية بدون animation
     document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.classList.add('slide-right'); });
     document.getElementById('page-login').classList.remove('active','slide-right');
@@ -4653,30 +4722,47 @@ let _topupFoundUid = null;
 
 function topupSearchUser() {
   const uid = (document.getElementById('topup-uid-input').value || '').trim();
-  const resultEl = document.getElementById('topup-user-result');
-  const errorEl  = document.getElementById('topup-user-error');
+  const resultEl  = document.getElementById('topup-user-result');
+  const errorEl   = document.getElementById('topup-user-error');
   const amountCard = document.getElementById('topup-amount-card');
-  resultEl.style.display = 'none';
-  errorEl.style.display  = 'none';
+  resultEl.style.display  = 'none';
+  errorEl.style.display   = 'none';
   amountCard.style.display = 'none';
   _topupFoundUid = null;
   if (!uid) return;
-  const reg = getUsersRegistry();
-  // البحث بالمعرف المباشر أو الـ uid
-  let foundKey = null;
-  let foundUser = null;
-  for (const k in reg) {
-    if (k === uid || reg[k].uid === uid) { foundKey = k; foundUser = reg[k]; break; }
-  }
-  if (!foundUser) {
-    errorEl.style.display = 'block';
-    return;
-  }
-  _topupFoundUid = foundKey;
-  document.getElementById('topup-user-email').textContent   = foundUser.email || foundKey;
-  document.getElementById('topup-user-balance').textContent = (foundUser.balance || 0).toFixed(2) + ' د.ع';
-  resultEl.style.display = 'block';
-  amountCard.style.display = 'block';
+
+  // البحث في السيرفر مباشرة (مصدر الحقيقة)
+  fetch(`${SERVER_URL}/user/find?uid=${encodeURIComponent(uid)}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && data.uid) {
+        const reg = getUsersRegistry();
+        reg[data.uid] = Object.assign(reg[data.uid] || {}, data);
+        saveUsersRegistry(reg);
+        _topupFoundUid = data.uid;
+        document.getElementById('topup-user-email').textContent   = data.email || data.uid;
+        document.getElementById('topup-user-balance').textContent = (data.balance || 0).toFixed(2) + ' د.ع';
+        resultEl.style.display   = 'block';
+        amountCard.style.display = 'block';
+      } else {
+        // fallback: بحث محلي
+        const reg = getUsersRegistry();
+        let foundUser = null, foundKey = null;
+        for (const k in reg) {
+          if (k === uid || reg[k].uid === uid) { foundKey = k; foundUser = reg[k]; break; }
+        }
+        if (foundUser) {
+          _topupFoundUid = foundKey;
+          document.getElementById('topup-user-email').textContent   = foundUser.email || foundKey;
+          document.getElementById('topup-user-balance').textContent = (foundUser.balance || 0).toFixed(2) + ' د.ع';
+          resultEl.style.display   = 'block';
+          amountCard.style.display = 'block';
+        } else {
+          errorEl.style.display = 'block';
+        }
+      }
+    })
+    .catch(() => { errorEl.style.display = 'block'; });
 }
 
 function executeTopup() {
@@ -4686,7 +4772,14 @@ function executeTopup() {
   const reg = getUsersRegistry();
   if (!reg[_topupFoundUid]) { showToast('❌ المستخدم غير موجود', 'error'); return; }
   reg[_topupFoundUid].balance = (reg[_topupFoundUid].balance || 0) + amount;
+  reg[_topupFoundUid].totalCharged = (reg[_topupFoundUid].totalCharged || 0) + amount;
   saveUsersRegistry(reg);
+  // مزامنة مع السيرفر
+  fetch(`${SERVER_URL}/user/balance`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uid: _topupFoundUid, balance: reg[_topupFoundUid].balance, totalCharged: reg[_topupFoundUid].totalCharged })
+  }).catch(() => {});
   // لو نفس المستخدم مسجل دخول الآن، حدّث رصيده مباشرة
   if (localStorage.getItem('wf_user_id') === _topupFoundUid) {
     const users = JSON.parse(localStorage.getItem('wf_users') || '{}');
@@ -4751,7 +4844,17 @@ function syncUserCharged(uid, amount) {
 // فتح صفحة إدارة المستخدمين
 function openAdminUsers() {
   navigate('admin-users');
-  renderAdminUsers();
+  fetch(`${SERVER_URL}/user/list`)
+    .then(r => r.ok ? r.json() : [])
+    .then(serverUsers => {
+      if (Array.isArray(serverUsers) && serverUsers.length > 0) {
+        const reg = getUsersRegistry();
+        serverUsers.forEach(u => { if (u.uid) reg[u.uid] = Object.assign(reg[u.uid] || {}, u); });
+        saveUsersRegistry(reg);
+      }
+      renderAdminUsers();
+    })
+    .catch(() => renderAdminUsers());
 }
 
 function renderAdminUsers() {
@@ -4822,11 +4925,16 @@ function adminChargeUser(uid) {
   const amount = parseFloat(prompt('أدخل مبلغ الشحن (د.ع):'));
   if (isNaN(amount) || amount <= 0) return;
   const reg = getUsersRegistry();
-  if (!reg[uid]) return;
+  if (!reg[uid]) { showToast('❌ المستخدم غير موجود محلياً', 'error'); return; }
   reg[uid].totalCharged = (reg[uid].totalCharged || 0) + amount;
   reg[uid].balance = (reg[uid].balance || 0) + amount;
   saveUsersRegistry(reg);
-  // إذا كان هذا المستخدم هو المسجّل حالياً على نفس الجهاز، حدّث الرصيد الظاهر
+  // إرسال للسيرفر بـ amount (الإضافة) مو balance الكامل
+  fetch(`${SERVER_URL}/user/balance`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uid, amount })
+  }).catch(() => {});
   if (localStorage.getItem('wf_user_id') === uid) {
     balance = reg[uid].balance;
     updateBalanceUI();
