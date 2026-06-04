@@ -5071,6 +5071,84 @@ function toggleTheme() {
 })();
 // ══════════════════════════════════════════════════════════════
 
+// ══════════════════════════════════════════════════════════════
+// تحديث أسعار الخدمات تلقائياً من دارك فولو (+1$ على كل خدمة)
+// وإخفاء أي خدمة غير موجودة في دارك فولو
+// ══════════════════════════════════════════════════════════════
+(async function syncDarkfollowPrices() {
+  // خريطة: key الخدمة في بوتنا → service ID في دارك فولو
+  const SERVICE_MAP = {
+    // انستغرام وايت
+    'devil':              '1961',
+    'ice':                '1941',
+    'shark':              '1915',
+    'joker':              '1910',
+    'dragon':             '1548',
+    'falcon':             '1573',
+    'long':               '1811',
+    'bear':               '1898',
+    'anaconda':           '1789',
+    'panda':              '1812',
+    'tiger':              '1588',
+    // تيليجرام وايت
+    'tg_deleted_limited': '1984',
+    'tg_deleted_nodrop':  '1950',
+    'tg_lifetime':        '1948',
+    'tg_forever':         '1551',
+    'tg_online':          '1922',
+    'tg_search':          '1907',
+    'tg_cheap':           '1552',
+    'tg_nodrop30':        '1919',
+    'tg_nodrop15':        '1867',
+    'tg_nodrop7':         '1777',
+  };
+
+  try {
+    const res = await fetch('/services/list');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const available = data.services; // { "service_id": { rate, name, ... } }
+
+    // نمشي على كل زر خدمة في الصفحة
+    document.querySelectorAll('[data-icon-key]').forEach(btn => {
+      const iconKey = btn.getAttribute('data-icon-key');
+      // نحول data-icon-key مثل "insta_devil" → "devil"، "tele_tg_online" → "tg_online"
+      let svcKey = iconKey.replace(/^insta_/, '').replace(/^tele_/, '');
+
+      const darkfollowId = SERVICE_MAP[svcKey];
+      if (!darkfollowId) return;
+
+      const svcData = available[darkfollowId];
+
+      if (!svcData) {
+        // الخدمة نحذفت من دارك فولو → نخفي الزر بالكامل
+        btn.style.display = 'none';
+        return;
+      }
+
+      // الخدمة موجودة → نحدث السعر = سعر دارك فولو + 1$
+      const newPrice = (svcData.rate + 1).toFixed(2);
+      const badge = btn.querySelector('.price-badge');
+      if (badge) {
+        // نحتفظ بأيقونة السلة ونبدل النص فقط
+        const svg = badge.querySelector('svg');
+        badge.textContent = '$' + newPrice;
+        if (svg) badge.insertBefore(svg, badge.firstChild);
+      }
+
+      // نحدث الـ onclick أيضاً بالسعر الجديد
+      const onclick = btn.getAttribute('onclick') || '';
+      const updated = onclick.replace(/'[\d.]+'\)$/, `'${newPrice}')`);
+      if (updated !== onclick) btn.setAttribute('onclick', updated);
+    });
+
+  } catch (e) {
+    console.warn('[PriceSync] فشل تحديث الأسعار:', e);
+  }
+})();
+// ══════════════════════════════════════════════════════════════
+
 </script>
 <!-- ══ Admin Direct-Click Icon Source Modal ══ -->
 <div id="icon-source-modal" role="dialog" aria-modal="true" onclick="if(event.target===this)closeIconSourceModal()">
